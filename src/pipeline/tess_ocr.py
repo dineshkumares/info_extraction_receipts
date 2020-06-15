@@ -7,7 +7,7 @@ import numpy as np
 # Need to get 
 # (word id, content and bounding box)
 
-image = "../data/raw/img/004.jpg"
+image = "../../data/raw/img/004.jpg"
 img = cv2.imread(image)
 
 
@@ -17,7 +17,7 @@ print(text)
 
 custom_config = r'--oem 3 --psm 6'
 
-d = pytesseract.image_to_data(img, output_type=Output.DICT, config=custom_config)
+d = pytesseract.image_to_data(img, output_type=Output.DICT) #, config=custom_config)
 print(d.keys())
 
 #draw boxes 

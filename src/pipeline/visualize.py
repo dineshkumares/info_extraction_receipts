@@ -24,12 +24,13 @@ def visualize_textboxes(img_name):
             img = cv2.putText(img, text, (x1, y1 - 1),
                         cv2.FONT_HERSHEY_DUPLEX, 0.4, (0, 0, 255), 1)
     
-    cv2.imshow('image', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    #cv2.imwrite(figures_path + img_name + '.jpg', img)
+    #cv2.imshow('image', img)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    cv2.imwrite(figures_path + img_name + '.jpg', img)
     topo_file.close()
-visualize_textboxes('000') 
+
+visualize_textboxes('005')
 
 
 
