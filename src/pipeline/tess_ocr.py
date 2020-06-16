@@ -25,6 +25,7 @@ n_boxes = len(d['text'])
 for i in range(n_boxes):
     if int(d['conf'][i]) >= 0.74:
         (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
+        print(x,y,w,h)
         text = d['text'][i]
         img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         img = cv2.putText(img, text, (x, y - 1),

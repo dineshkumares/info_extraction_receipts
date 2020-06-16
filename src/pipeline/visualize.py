@@ -8,26 +8,29 @@ box_path= "../../data/raw/box/"
 figures_path = "../../figures/"
 
 
-def visualize_textboxes(img_name):
+def visualize_textboxes(img_name, save_img = False):
     image = image_path + img_name + '.jpg'
     box = box_path + img_name + '.csv'
     img = cv2.imread(image)
     with open(box) as topo_file:
         for line in topo_file:
             coor = line.split(',')
-            print(coor)
+            #print(coor)
             x1,y1,x3,y3 = int(coor[0]),int(coor[1]),int(coor[4]),int(coor[5])
             text = coor[8].strip('\n').strip('\'')
-            print(x1,y1,x3,y3,text)
+            #print(x1,y1,x3,y3,text)
 
             img = cv2.rectangle(img, (x1, y1), (x3, y3), (255, 0, 0), 1)
             img = cv2.putText(img, text, (x1, y1 - 1),
                         cv2.FONT_HERSHEY_DUPLEX, 0.4, (0, 0, 255), 1)
-    
-    #cv2.imshow('image', img)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
-    cv2.imwrite(figures_path + img_name + '.jpg', img)
+
+    if save_img:
+        cv2.imwrite(figures_path + img_name + '.jpg', img)
+        
+    cv2.imshow('image', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
     topo_file.close()
 
 visualize_textboxes('005')
