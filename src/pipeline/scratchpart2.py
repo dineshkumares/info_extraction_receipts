@@ -19,10 +19,11 @@ image = cv2.imread("test_scratchpart2.jpg")
 image_height, image_width = image.shape[0], image.shape[1]
 
 #df = pd.read_csv("../../data/raw/box/test_tess_339.csv")
-#image = '../../data/raw/img/test_tess_339.jpg'
-#print(df)
+#image = cv2.imread('../../data/raw/img/test_tess_339.jpg')
+# print(df)
 
-
+#df = pd.read_csv("test550_scratchpart2.csv")
+#image = cv2.imread('test550_scratchpart2.jpg')
 """
 
 Line formation:
@@ -44,11 +45,14 @@ going line by line from left to right and at last the final bottom right word of
 """
 #sort df by 'top' coordinate. 
 def line_formation(df):
+    #further cleaning
+    df.dropna(inplace=True)
     #sort from top to bottom
     df.sort_values(by=['ymin'], inplace=True)
     df.reset_index(drop=True, inplace=True)
+    
     #print(df)
-
+    #print(df)
     """
 
     _______________y axis__________
@@ -76,7 +80,7 @@ def line_formation(df):
             top_a = row['ymin']
             bottom_a = row['ymax']
             #top, bottom, right, left
-            coordinates = (row['ymin'],row['ymax'],row['xmin'],row['xmax'])
+            #coordinates = (row['ymin'],row['ymax'],row['xmin'],row['xmax'])
             #print(coordinates)
 
             #line will atleast have the word in it
@@ -93,13 +97,13 @@ def line_formation(df):
                         bottom_b = row_2['ymax'] 
                         if (top_a <= bottom_b) and (bottom_a >= top_b): 
                             line.append(idx_2)
+                            #print(line)
             master.append(line)
 
-    print(master)
+    #print(master)
 
     df2 = pd.DataFrame({'words_indices': master, 'line_number':[x for x in range(1,len(master)+1)]})
 
-   
     #explode the list columns eg : [1,2,3]
     df2 = df2.set_index('line_number').words_indices.apply(pd.Series).stack()\
             .reset_index(level=0).rename(columns={0:'words_indices'})
@@ -124,11 +128,10 @@ def line_formation(df):
     #print(final2)
 
     #len(df2)
-
+   #print(final2)
     return final2
-
+    
 line_formation(df)
-
 
 
 
@@ -151,10 +154,10 @@ Pseudocode:
 
 df = line_formation(df)
 #print(df)
-def grapher(df):
+def grapher(df, show=False):
 
     #horizontal edges formation
-    print(df)
+    #print(df)
     df.reset_index(inplace=True)
             
     
@@ -174,8 +177,9 @@ def grapher(df):
         a = group['index'].tolist()
         b = group['index'].tolist()
         #b.reverse()
+        #a = 0,1,2
+        #2
         horizontal_connection = {a[i]:a[i+1] for i in range(len(a)-1) }
-
 
         #storing directional connections
         right_dict_temp = {a[i]:{'right':a[i+1]} for i in range(len(a)-1) }
@@ -194,7 +198,7 @@ def grapher(df):
 
     dic1,dic2 = left_connections, right_connections
     
-    print(df)
+    #print(df)
 
     #this can be used to update the connections dictionary
     # result = {}
@@ -274,7 +278,7 @@ def grapher(df):
 
     for idx, row in df.iterrows():
         if idx not in bottom_connections.keys():
-            below = False 
+            #below = False 
             right_a = row['xmax']
             left_a = row['xmin']
             #top, bottom, right, left
@@ -300,18 +304,19 @@ def grapher(df):
                             df.loc[df['index'] == idx , 'bottom'] = idx_2
                             df.loc[df['index'] == idx_2, 'top'] = idx 
 
-                            print(bottom_connections)
-                            #once the first condition is met, break the loop 
+                            #print(bottom_connections)
+
+                            #once the condition is met, break the loop to reduce redundant time complexity
                             break 
                     
                             #below = True 
 
-    print(df)
+    # print(df)
 
 
-    print(bottom_connections)
-    print(top_connections)
-    print(horizontal_connections)
+    # print(bottom_connections)
+    # print(top_connections)
+    # print(horizontal_connections)
 
 
     #combining both 
@@ -322,19 +327,18 @@ def grapher(df):
     for key in (dic1.keys() | dic2.keys()):
         if key in dic1: result.setdefault(key, []).append(dic1[key])
         if key in dic2: result.setdefault(key, []).append(dic2[key])
-    print(result)
+    #print(result)
 
 
      
     G = nx.from_dict_of_lists(result)
     layout = nx.spring_layout(G)
-    nx.draw(G, layout, with_labels=True)
-    plt.show()
-grapher(df)
 
+    if show == True:
+        nx.draw(G, layout, with_labels=True)
+        plt.show()
 
-
-
+    return G, df 
 
 """
         for r_idx, row in group.iloc[:-1].iterrows():
@@ -378,3 +382,61 @@ grapher(df)
 75: [70], 76: [77], 77: [78], 78: [80], 
 79: [80], 80: [81], 81: [82]}
 """
+
+#features calculation
+
+graph, processed_df = grapher(df)
+print(df)
+#nx.draw(graph, nx.spring_layout(graph), with_labels=True)
+plt.show()
+
+#locate df.index and see right, if right then do calculation with it and put it back 
+#as a new column
+
+
+def relative_distance(df):
+    #RDL and RDT are negative while RDR and RDB are positive
+
+    for index in df['index'].to_list():
+
+        right_index = df.loc[df['index'] == index, 'right'].values[0]
+        left_index = df.loc[df['index'] == index, 'left'].values[0]
+        bottom_index = df.loc[df['index'] == index, 'bottom'].values[0]
+        top_index = df.loc[df['index'] == index, 'top'].values[0]
+
+        #rd_r = (right_word_xmin - left_word_xmax)/image_width
+
+        #check if it is nan value 
+        if np.isnan(right_index) == False: 
+            right_word_left = df.loc[df['index'] == right_index, 'xmin'].values[0]
+            source_word_right = df.loc[df['index'] == index, 'xmax'].values[0]
+
+            df.loc[df['index'] == index, 'rd_r'] = (right_word_left - source_word_right)/image_width
+
+        if np.isnan(left_index) == False:
+            left_word_right = df.loc[df['index'] == left_index, 'xmax'].values[0]
+            source_word_left = df.loc[df['index'] == index, 'xmin'].values[0]
+
+            df.loc[df['index'] == index, 'rd_l'] = (left_word_right - source_word_left)/image_width
+        
+        if np.isnan(bottom_index) == False:
+            bottom_word_top = df.loc[df['index'] == bottom_index, 'ymin'].values[0]
+            source_word_bottom = df.loc[df['index'] == index, 'ymax'].values[0]
+
+            df.loc[df['index'] == index, 'rd_b'] = (bottom_word_top - source_word_bottom)/image_height
+
+        if np.isnan(top_index) == False:
+            top_word_bottom = df.loc[df['index'] == top_index, 'ymax'].values[0]
+            source_word_top = df.loc[df['index'] == index, 'ymin'].values[0]
+
+            df.loc[df['index'] == index, 'rd_t'] = (top_word_bottom - source_word_top)/image_height
+
+
+    #replace all tne NaN values with '0' meaning there is nothing in that direction
+    df[['rd_r','rd_b','rd_l','rd_t']] = df[['rd_r','rd_b','rd_l','rd_t']].fillna(0)
+    
+    print(df)
+
+
+
+relative_distance(processed_df)
