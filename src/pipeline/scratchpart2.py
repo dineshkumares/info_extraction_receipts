@@ -18,10 +18,13 @@ image = cv2.imread("test_scratchpart2.jpg")
 #for relative distances later
 image_height, image_width = image.shape[0], image.shape[1]
 
+#df = pd.read_csv("../../data/raw/box/test_tess_339.csv")
+#image = '../../data/raw/img/test_tess_339.jpg'
+#print(df)
+
 
 """
 
- 
 Line formation:
 1) Sort words based on Top coordinate:
 2) Form lines as group of words which obeys the following:
@@ -41,6 +44,7 @@ going line by line from left to right and at last the final bottom right word of
 """
 #sort df by 'top' coordinate. 
 def line_formation(df):
+    #sort from top to bottom
     df.sort_values(by=['ymin'], inplace=True)
     df.reset_index(drop=True, inplace=True)
     #print(df)
@@ -80,15 +84,18 @@ def line_formation(df):
             #line1=[row['Object']]
         
             for idx_2, row_2 in df.iterrows():
+                #check to see if idx_2 is in flat_master removes ambiguity
+                #picks higher cordinate one. 
+                if idx_2 not in flat_master:
                 #if not the same words
-                if not idx == idx_2:
-                    top_b = row_2['ymin']
-                    bottom_b = row_2['ymax'] 
-                    if (top_a <= bottom_b) and (bottom_a >= top_b): 
-                        line.append(idx_2)
+                    if not idx == idx_2:
+                        top_b = row_2['ymin']
+                        bottom_b = row_2['ymax'] 
+                        if (top_a <= bottom_b) and (bottom_a >= top_b): 
+                            line.append(idx_2)
             master.append(line)
 
-    #print(master)
+    print(master)
 
     df2 = pd.DataFrame({'words_indices': master, 'line_number':[x for x in range(1,len(master)+1)]})
 
@@ -124,6 +131,8 @@ line_formation(df)
 
 
 
+
+
 """
 Pseudocode:
 1) Read words from each line starting from topmost line going towards bottommost line
@@ -147,73 +156,177 @@ def grapher(df):
     #horizontal edges formation
     print(df)
     df.reset_index(inplace=True)
-    horizontal_dict = {}            
+            
     
    
     grouped = df.groupby('line_number')
     
     #for undirected graph construction
-    connections = {}
+    horizontal_connections = {}
 
     #left
-    dict_2 = {}
+    left_connections = {}    
 
     #right
-    hori2 = {}
+    right_connections = {}
 
     for _,group in grouped:
         a = group['index'].tolist()
         b = group['index'].tolist()
         #b.reverse()
-        connection = {a[i]:[a[i+1]] for i in range(len(a)-1) }
+        horizontal_connection = {a[i]:a[i+1] for i in range(len(a)-1) }
 
-        my_dict = {a[i]:{'right':[a[i+1]]} for i in range(len(a)-1) }
-        my_dict2 = {b[i+1]:{'left':[b[i]]} for i in range(len(b)-1) }
 
-        # for r_idx2, row2 in group.iterrows():
-        #     distance_x1 = row['xmax']
-        #     for r_idx, row in group.iterrows():
-        #         if r_idx != r_idx2:
-        #             distance_x2 = row2['xmin']
-        #             relative_distance = (distance_x1-distance_x2)/image_width
-                    
+        #storing directional connections
+        right_dict_temp = {a[i]:{'right':a[i+1]} for i in range(len(a)-1) }
+        left_dict_temp = {b[i+1]:{'left':b[i]} for i in range(len(b)-1) }
 
-        horizontal_dict.update(my_dict)
-        hori2.update(my_dict2)
-        connections.update(connection)
-    dic1,dic2 = horizontal_dict, hori2
+
+        #add the indices in the dataframes
+        for i in range(len(a)-1):
+           df.loc[df['index'] == a[i], 'right'] = int(a[i+1])
+           df.loc[df['index'] == a[i+1], 'left'] = int(a[i])
     
-    print(connections)
-    result = {}
-    for key in (dic1.keys() | dic2.keys()):
-        if key in dic1: result.setdefault(key, []).append(dic1[key])
-        if key in dic2: result.setdefault(key, []).append(dic2[key])
-    print(result)
+        left_connections.update(right_dict_temp)
+        right_connections.update(left_dict_temp)
+        horizontal_connections.update(horizontal_connection)
+
+
+    dic1,dic2 = left_connections, right_connections
+    
+    print(df)
+
+    #this can be used to update the connections dictionary
+    # result = {}
+    # for key in (dic1.keys() | dic2.keys()):
+    #     if key in dic1: result.setdefault(key, []).append(dic1[key])
+    #     if key in dic2: result.setdefault(key, []).append(dic2[key])
+    # #print(result)
+
+
+
 
     
-    print()
-    result = {}
-    for key in (dic1.keys() | dic2.keys()):
-        if key in dic1: result.setdefault(key, {}).update(dic1[key])
-        if key in dic2: result.setdefault(key, {}).update(dic2[key])
+    # print()
+    # result = {}
+    # for key in (dic1.keys() | dic2.keys()):
+    #     if key in dic1: result.setdefault(key, {}).update(dic1[key])
+    #     if key in dic2: result.setdefault(key, {}).update(dic2[key])
 
-    print(result)
+ 
     #get_numeric = lambda x: x if x != UNDEFINED else 0
-    print(result[0]['right'][0])
-    print(result[1]['right'][0])
-    print(result[1]['left'][0])
+    # print(result[0]['right'][0])
+    # print(result[1]['right'][0])
+    # print(result[1]['left'][0])
 
-    for k,v in horizontal_dict.items():
+    #add it to the dataframe. 
+  
+
+
+    #append right and left incides to the main df for features calculation
+    # source_dict = left_connections
+    # for indices in source_dict.keys():
+    #     for ticker in source_dict[indices].keys():
+    #         right_item_index = source_dict[indices][ticker]
+    #         df.loc[df['index'] == indices, 'right'] = int(right_item_index)
+
+    # source_dict = right_connections
+    # for indices in source_dict.keys():
+    #     for ticker in source_dict[indices].keys():
+    #         left_item_index = source_dict[indices][ticker]
+    #         df.loc[df['index'] == indices, 'left'] = int(left_item_index)
+
+
+    
+
+
+    # flatten the dictionary
+
+
+    #print(pd.DataFrame(reform))
+   
+   
+   
+    #RD_l and RD_t are negative
+
+        #print(v)
+        #RD_r = (df1['xmax'] - df2['xmin'])/image_width
+        #print(RD_r)
+        #a[k]:[a[k+1]]
+        
+
+        #try except
+
+        #print(df1)
+        
         #df k get values xmin
         #df v get values xmax
         #get distance and push it into a list
         #use that for features
 
 
-        pass
-        #horizontal_dict[k].append('asd')
+    
+    #verticle connections formation
+
+
+    bottom_connections = {}
+    top_connections = {}
+
+    for idx, row in df.iterrows():
+        if idx not in bottom_connections.keys():
+            below = False 
+            right_a = row['xmax']
+            left_a = row['xmin']
+            #top, bottom, right, left
+            #coordinates = (row['ymin'],row['ymax'],row['xmin'],row['xmax'])
+            #print(coordinates)
+            #line will atleast have the word in it
+            #line1=[row['Object']]
+            #if below == False: 
+            for idx_2, row_2 in df.iterrows():
+
+                #check for higher idx values 
+                #if idx_2 not in [x for v in bottom_connections.values() for x in v] and idx < idx_2:
+                if idx_2 not in bottom_connections.values() and idx < idx_2:
+                    #if idx_2 not in bottom_connections.values() and (idx != idx_2):
+                        right_b = row_2['xmax']
+                        left_b = row_2['xmin'] 
+                        if (left_b <= right_a) and (right_b >= left_a): 
+                            bottom_connections[idx] = idx_2
+                            
+                            top_connections[idx_2] = idx
+
+                            #add it to the dataframe
+                            df.loc[df['index'] == idx , 'bottom'] = idx_2
+                            df.loc[df['index'] == idx_2, 'top'] = idx 
+
+                            print(bottom_connections)
+                            #once the first condition is met, break the loop 
+                            break 
+                    
+                            #below = True 
+
+    print(df)
+
+
+    print(bottom_connections)
+    print(top_connections)
+    print(horizontal_connections)
+
+
+    #combining both 
+    result = {}
+    dic1 = horizontal_connections
+    dic2 = bottom_connections
+
+    for key in (dic1.keys() | dic2.keys()):
+        if key in dic1: result.setdefault(key, []).append(dic1[key])
+        if key in dic2: result.setdefault(key, []).append(dic2[key])
+    print(result)
+
+
      
-    G = nx.from_dict_of_lists(connections)
+    G = nx.from_dict_of_lists(result)
     layout = nx.spring_layout(G)
     nx.draw(G, layout, with_labels=True)
     plt.show()
