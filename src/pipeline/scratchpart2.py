@@ -18,8 +18,8 @@ image = cv2.imread("test_scratchpart2.jpg")
 #for relative distances later
 image_height, image_width = image.shape[0], image.shape[1]
 
-#df = pd.read_csv("../../data/raw/box/test_tess_339.csv")
-#image = cv2.imread('../../data/raw/img/test_tess_339.jpg')
+# df = pd.read_csv("../../data/raw/box/test_tess_339.csv")
+# image = cv2.imread('../../data/raw/img/test_tess_339.jpg')
 # print(df)
 
 #df = pd.read_csv("test550_scratchpart2.csv")
@@ -198,77 +198,7 @@ def grapher(df, show=False):
 
     dic1,dic2 = left_connections, right_connections
     
-    #print(df)
-
-    #this can be used to update the connections dictionary
-    # result = {}
-    # for key in (dic1.keys() | dic2.keys()):
-    #     if key in dic1: result.setdefault(key, []).append(dic1[key])
-    #     if key in dic2: result.setdefault(key, []).append(dic2[key])
-    # #print(result)
-
-
-
-
-    
-    # print()
-    # result = {}
-    # for key in (dic1.keys() | dic2.keys()):
-    #     if key in dic1: result.setdefault(key, {}).update(dic1[key])
-    #     if key in dic2: result.setdefault(key, {}).update(dic2[key])
-
  
-    #get_numeric = lambda x: x if x != UNDEFINED else 0
-    # print(result[0]['right'][0])
-    # print(result[1]['right'][0])
-    # print(result[1]['left'][0])
-
-    #add it to the dataframe. 
-  
-
-
-    #append right and left incides to the main df for features calculation
-    # source_dict = left_connections
-    # for indices in source_dict.keys():
-    #     for ticker in source_dict[indices].keys():
-    #         right_item_index = source_dict[indices][ticker]
-    #         df.loc[df['index'] == indices, 'right'] = int(right_item_index)
-
-    # source_dict = right_connections
-    # for indices in source_dict.keys():
-    #     for ticker in source_dict[indices].keys():
-    #         left_item_index = source_dict[indices][ticker]
-    #         df.loc[df['index'] == indices, 'left'] = int(left_item_index)
-
-
-    
-
-
-    # flatten the dictionary
-
-
-    #print(pd.DataFrame(reform))
-   
-   
-   
-    #RD_l and RD_t are negative
-
-        #print(v)
-        #RD_r = (df1['xmax'] - df2['xmin'])/image_width
-        #print(RD_r)
-        #a[k]:[a[k+1]]
-        
-
-        #try except
-
-        #print(df1)
-        
-        #df k get values xmin
-        #df v get values xmax
-        #get distance and push it into a list
-        #use that for features
-
-
     
     #verticle connections formation
 
@@ -340,48 +270,7 @@ def grapher(df, show=False):
 
     return G, df 
 
-"""
-        for r_idx, row in group.iloc[:-1].iterrows():
-            horizontal_dict[r_idx] = [r_idx + 1] 
-            distance_x1 = row['xmax']
-            for r_idx2, row2 in group.iloc[:-1].iterrows():
-                if r_idx != r_idx2:
-                    distance_x2 = row2['xmin']
-                    relative_distance = (distance_x1-distance_x2)/image_width
-                    dict_2[r_idx] = {'right':(r_idx2,float('{:.2f}'.format(relative_distance)))}
 
-    print(horizontal_dict)
-    print(dict_2)
-    G = nx.from_dict_of_lists(horizontal_dict)
-    layout = nx.spring_layout(G)
-    nx.draw(G, layout, with_labels=True)
-    plt.show()
-    
-grapher(df)
-
-
-{0: [1], 1: [2], 2: [6], 
-3: [4], 4: [5], 5: [6], 6: [7], 
-7: [8], 8: [15], 9: [10], 10: [11], 
-11: [12], 12: [13], 13: [14], 14: [15], 
-15: [23], 16: [17], 17: [19], 18: [19], 
-19: [20], 20: [23], 21: [23], 22: [23],
-23: [24], 24: [51], 25: [26], 26: [27], 
-27: [28], 28: [31], 29: [30], 30: [31], 
-31: [32], 32: [70], 33: [34], 34: [36],
-35: [38], 36: [37], 37: [40], 38: [39], 
-39: [40], 40: [41], 41: [42], 42: [45], 
-43: [44], 44: [45], 45: [56], 46: [47], 
-47: [48], 48: [49], 49: [50], 50: [51], 
-51: [70], 52: [53], 53: [54], 54: [55], 
-55: [56], 56: [59], 57: [58], 58: [66], 
-59: [63], 60: [61], 61: [62], 62: [63], 
-63: [67], 64: [65], 65: [66], 66: [67], 
-67: [70], 68: [70], 69: [70], 70: [75],
-71: [72], 72: [73], 73: [74], 74: [75], 
-75: [70], 76: [77], 77: [78], 78: [80], 
-79: [80], 80: [81], 81: [82]}
-"""
 
 #features calculation
 
@@ -436,7 +325,121 @@ def relative_distance(df):
     df[['rd_r','rd_b','rd_l','rd_t']] = df[['rd_r','rd_b','rd_l','rd_t']].fillna(0)
     
     print(df)
+    return df 
 
 
 
 relative_distance(processed_df)
+
+df = relative_distance(processed_df)
+# import flair 
+# from flair.data import Sentence
+# from flair.embeddings import WordEmbeddings
+# from flair.embeddings import CharacterEmbeddings
+# from flair.embeddings import StackedEmbeddings
+# from flair.embeddings import FlairEmbeddings
+# from flair.embeddings import BertEmbeddings
+# from flair.embeddings import ELMoEmbeddings
+# from flair.embeddings import FlairEmbeddings
+
+
+# flair_forward  = FlairEmbeddings('news-forward-fast')
+# flair_backward = FlairEmbeddings('news-backward-fast')
+
+
+# stacked_embeddings = StackedEmbeddings( embeddings = [ 
+#                                                        flair_forward, 
+#                                                        flair_backward
+#                                                       ])
+
+
+# # create a sentence #
+# sentence = Sentence('Analytics Vidhya blogs are Awesome')
+# # embed words in sentence #
+# stacked_embeddings(sentence)
+# for token in sentence:
+#   print(token.embedding)
+# # data type and size of embedding #
+# print(type(token.embedding))
+# # storing size (length) #
+# z = token.embedding.size()[0]
+
+
+# from tqdm import tqdm ## tracks progress of loop ##
+
+# # creating a tensor for storing sentence embeddings #
+# s = torch.zeros(0,z)
+
+# # iterating Sentence (tqdm tracks progress) #
+# for tweet in tqdm(txt):   
+#   # empty tensor for words #
+#   w = torch.zeros(0,z)   
+#   sentence = Sentence(tweet)
+#   stacked_embeddings.embed(sentence)
+#   # for every word #
+#   for token in sentence:
+#     # storing word Embeddings of each word in a sentence #
+#     w = torch.cat((w,token.embedding.view(-1,z)),0)
+#   # storing sentence Embeddings (mean of embeddings of all words)   #
+#   s = torch.cat((s, w.mean(dim = 0).view(-1, z)),0)
+
+
+def get_text_features(df): 
+
+    data = df['Object'].tolist()
+    
+    '''
+        Args:
+            str, input data
+            
+        Returns: 
+            np.array, shape=(22,);
+            an array of the text converted to features
+            
+    '''
+    special_chars = {'&': 0, '@': 1, '#': 2, '(': 3, ')': 4, '-': 5, '+': 6, 
+                    '=': 7, '*': 8, '%': 9, '.':10, ',': 11, '\\': 12,'/': 13, 
+                    '|': 14, ':': 15}
+    
+    # character wise
+    n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special = [],[],[],[],[],[]
+    for words in data:
+        upper,lower,alpha,spaces,numeric,special = 0,0,0,0,0,0
+        for char in words: 
+            # for lower letters 
+            if char.islower(): 
+                lower += 1
+    
+            # for upper letters 
+            if char.isupper(): 
+                upper += 1
+            
+            # for white spaces
+            if char.isspace():
+                spaces += 1
+            
+            # for alphabetic chars
+            if char.isalpha():
+                alpha += 1
+            
+            # for numeric chars
+            if char.isnumeric():
+                numeric += 1
+                           
+            if char in special_chars.keys():
+                special += 1 
+
+        n_lower.append(lower)
+        n_upper.append(upper)
+        n_spaces.append(spaces)
+        n_alpha.append(alpha)
+        n_numeric.append(numeric)
+        n_special.append(special)
+        #features.append([n_lower, n_upper, n_spaces, n_alpha, n_numeric, n_digits])
+
+    df['n_upper'],df['n_lower'],df['n_alpha'],df['n_spaces'],\
+    df['n_numeric'],df['n_special'] = n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special
+
+    print(df)
+
+get_text_features(df)
