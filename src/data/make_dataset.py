@@ -1,30 +1,29 @@
-# -*- coding: utf-8 -*-
-import click
-import logging
-from pathlib import Path
-from dotenv import find_dotenv, load_dotenv
+from os import path, replace, scandir
 
+"""
+This script is to format the raw data into proper formats: jpg, csv and json
+"""
 
-@click.command()
-@click.argument('input_filepath', type=click.Path(exists=True))
-@click.argument('output_filepath', type=click.Path())
-def main(input_filepath, output_filepath):
-    """ Runs data processing scripts to turn raw data from (../raw) into
-        cleaned data ready to be analyzed (saved in ../processed).
-    """
-    logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
+def noext(f):
+    return path.splitext(f.name)[0]
 
+raw_task1_files = list(
+    sorted(scandir("0325updated.task1train(626p)"), key=lambda f: f.name)
+)
+raw_task2_files = list(
+    sorted(scandir("0325updated.task2train(626p)"), key=lambda f: f.name)
+)
 
-if __name__ == '__main__':
-    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
+jpg_files = [f for f in raw_task1_files if f.name.endswith("jpg")]
+csv_files = [f for f in raw_task1_files if f.name.endswith("txt")]
+json_files = [f for f in raw_task2_files if f.name.endswith("txt")]
 
-    # not used in this stub but often useful for finding various files
-    project_dir = Path(__file__).resolve().parents[2]
+for i, (f_jpg, f_csv, f_json) in enumerate(zip(jpg_files, csv_files, json_files)):
+    if noext(f_jpg) != noext(f_csv) or noext(f_csv) != noext(f_json):
+        raise ValueError("Raw data filenames mismatch")
 
-    # find .env automagically by walking up directories until it's found, then
-    # load up the .env entries as environment variables
-    load_dotenv(find_dotenv())
+    print(f"{i:03d}", f_jpg, f_csv, f_json)
 
-    main()
+    replace(f_jpg.path, f"data/raw/img{i:03d}.jpg")
+    replace(f_csv.path, f"data/raw/box{i:03d}.csv")
+    replace(f_json.path, f"data/raw/key{i:03d}.json")
