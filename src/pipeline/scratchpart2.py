@@ -11,9 +11,32 @@ import networkx as nx
 
 
 
-df = pd.read_csv("test_scratchpart2.csv")
-image = cv2.imread("test_scratchpart2.jpg")
+df = pd.read_csv("000.csv")
+image = cv2.imread("000.jpg")
 
+
+
+image = cv2.imread("../../data/raw/img/339.jpg")
+
+filename = '000.csv'
+filename = '339.csv'
+
+
+filepath = '../../data/interim/'+filename
+df = pd.read_csv(filepath, header=None, sep='\n')
+df = df[0].str.split(',', expand=True)
+temp = df.copy() 
+temp[temp.columns] = temp.apply(lambda x: x.str.strip())
+temp.fillna('', inplace=True)
+temp[8]= temp[8].str.cat(temp.iloc[:,9:-1], sep =", ") 
+temp[temp.columns] = temp.apply(lambda x: x.str.rstrip(", ,"))
+temp = temp.loc[:, :8]
+temp.drop([2,3,6,7], axis=1, inplace=True)
+temp.columns = ['xmin','ymin','xmax','ymax','Object']
+temp[['xmin','ymin','xmax','ymax']] = temp[['xmin','ymin','xmax','ymax']].apply(pd.to_numeric)
+
+df = temp 
+print(df)
 #print(df)
 #for relative distances later
 image_height, image_width = image.shape[0], image.shape[1]
@@ -45,6 +68,9 @@ going line by line from left to right and at last the final bottom right word of
 """
 #sort df by 'top' coordinate. 
 def line_formation(df):
+    #remove empty spaces both in front and behind
+    df.columns = df.columns.str.strip()
+
     #further cleaning
     df.dropna(inplace=True)
     #sort from top to bottom
@@ -129,6 +155,7 @@ def line_formation(df):
 
     #len(df2)
    #print(final2)
+    print (final2)
     return final2
     
 line_formation(df)
@@ -276,7 +303,10 @@ def grapher(df, show=False):
 
 graph, processed_df = grapher(df)
 print(df)
-#nx.draw(graph, nx.spring_layout(graph), with_labels=True)
+layout = nx.kamada_kawai_layout(graph)
+#layout = nx.spring_layout(graph)
+
+nx.draw(graph, layout, with_labels=True)
 plt.show()
 
 #locate df.index and see right, if right then do calculation with it and put it back 
@@ -384,8 +414,39 @@ df = relative_distance(processed_df)
 #   s = torch.cat((s, w.mean(dim = 0).view(-1, z)),0)
 
 
-def get_text_features(df): 
 
+def make_graph_data(graph_dict, text_list):
+    '''
+        Function to make an adjacency matrix from a networkx graph object
+        as well as padded feature matrix
+        Args:
+            G: networkx graph object
+            
+            text_list: list,
+                        of text entities:
+                        ['Tax Invoice', '1/2/2019', ...]
+        Returns:
+            A: Adjacency matrix as np.array
+            X: Feature matrix as numpy array for input graph
+    '''
+    G = nx.from_dict_of_lists(graph_dict)
+    adj_sparse = nx.adjacency_matrix(G)
+
+    # preprocess the sparse adjacency matrix returned by networkx function
+    A = np.array(adj_sparse.todense())
+    A = self._pad_adj(A)
+
+    # preprocess the list of text entities
+    feat_list = list(map(self._get_text_features, text_list))
+    feat_arr = np.array(feat_list)
+    X = self._pad_text_features(feat_arr)
+
+    return A, X
+
+
+print(make_adjacency(graph))
+
+def get_text_features(df): 
     data = df['Object'].tolist()
     
     '''
@@ -397,15 +458,17 @@ def get_text_features(df):
             an array of the text converted to features
             
     '''
-    special_chars = {'&': 0, '@': 1, '#': 2, '(': 3, ')': 4, '-': 5, '+': 6, 
-                    '=': 7, '*': 8, '%': 9, '.':10, ',': 11, '\\': 12,'/': 13, 
-                    '|': 14, ':': 15}
-    
+    special_chars = ['&', '@', '#', '(',')','-','+', 
+                '=', '*', '%', '.', ',', '\\','/', 
+                '|', ':']
+
     # character wise
     n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special = [],[],[],[],[],[]
+
     for words in data:
         upper,lower,alpha,spaces,numeric,special = 0,0,0,0,0,0
         for char in words: 
+            print(char)
             # for lower letters 
             if char.islower(): 
                 lower += 1
@@ -426,7 +489,7 @@ def get_text_features(df):
             if char.isnumeric():
                 numeric += 1
                            
-            if char in special_chars.keys():
+            if char in special_chars:
                 special += 1 
 
         n_lower.append(lower)
@@ -438,8 +501,9 @@ def get_text_features(df):
         #features.append([n_lower, n_upper, n_spaces, n_alpha, n_numeric, n_digits])
 
     df['n_upper'],df['n_lower'],df['n_alpha'],df['n_spaces'],\
-    df['n_numeric'],df['n_special'] = n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special
+    df['n_numeric'],df['n_special'] = n_upper, n_lower, n_alpha, n_spaces, n_numeric,n_special
 
     print(df)
+    print(df.loc[df['index'] == 75].Object)
 
 get_text_features(df)
