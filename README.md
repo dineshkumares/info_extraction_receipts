@@ -1,5 +1,199 @@
 info_extraction_receipts
 ==============================
+# Why Graphs?
+
+"The aggregation over the neighborhood of a node in the network is analogue to a pooling operation in a convolutional neural network and the multiplication with the weight matrix W is analogue to a filtering operation. Although these operations are similar — hence the similarity in names between GCNs and CNNs — they are not the same.
+"
+
+## Classification:
+_edit this_ <br>
+When dealing with large graphs, such as those that arise in the context of online social networks, a subset of nodes may be labeled. These labels can indicate demographic values, interest, beliefs or other characteristics of the nodes (users). A core problem is to use this information to extend the labeling so that all nodes are assigned a label (or labels).
+
+### ubiquitous
+## Applying Graph Convolutional Networks:
+(Simplifying Graph Convolutional Networks)
+https://arxiv.org/pdf/1902.07153.pdf
+
+# GCN FROM SCRATCH
+
+https://colab.research.google.com/drive/1HGSmZYjmyXlVsqp9LvlIOXxjIRWW_jmz
+
+
+# solution for classification:
+https://colab.research.google.com/drive/1lpSXzmkBac4122aXpZgoShCnwEPZ7xgL#scrollTo=I2rM9GtBLLjF
+
+
+# Build dataset from this?
+
+Use Wikidata?
+
+wikidata.org 
+
+https://github.com/networkx/networkx/tree/master/examples/applications
+
+Or
+
+__Classification Datasets:__
+https://medium.com/@sergei.ivanov_24894/new-graph-classification-data-sets-43e134340d2d
+
+
+
+__More data:__
+http://www-personal.umich.edu/~mejn/netdata/
+
+
+
+
+# Data
+http://www-personal.umich.edu/~mejn/netdata/
+
+
+
+
+
+
+
+
+### Classification using GCNs
+
+Simplifying Graph Convlutional Networks
+https://arxiv.org/pdf/1902.07153.pdf
+
+Node features and attributes are represented by 'signals'
+
+# Graph Convolutional Networks (GCNs)
+
+Graph Neural Networks is a subset of deep learning with a lot of stuff done in it.Check this out! [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf)
+
+
+Check out [this](https://towardsdatascience.com/graph-convolutional-networks-for-geometric-deep-learning-1faf17dee008) excellent introduction to Graph Neural Networks.
+
+OF the subset, here is another subset: 
+## Spectral Convolutions
+Blog post by the author:
+https://tkipf.github.io/graph-convolutional-networks/
+<br>
+_Convolution_ 
+: In mathematics convolution is a mathematical operation on two functions that produces a third function expressing how the shape of one is modified by the other.
+
+
+
+Convolutions can be computed in by finding the eigendecomposition of the graph Laplacian
+
+Why Conventional Convolutional Neural Network methods dont work:
+- There is no Euclidean distance in graphs.
+- Graphs have a certain number of nodes. 
+- There is no notion of direction in graphs.
+
+Overall steps are
+- Transform the graph into the spectral domain using eigendecomposition
+- Apply eigendecomposition to the specified kernel
+- Multiply the spectral graph and spectral kernel (like vanilla convolutions)
+- Return results in the original spatial domain (analogous to inverse GFT)
+
+A kernel is a matrix, which is slid across the image and multiplied with the input such that the output is enhanced in a certain desirable manner.
+
+# Give example of a graph and adjacent, degree and laplacian matrix
+
+### Laplacian matrix ( & Eigen vectors &)
+The Laplacian is used in calculating “graph gradients,” i.e. measures of how much the function values is changing at each node, relative to the function value at nearby nodes, according to the weight with each of those neighbor nodes. __ When you calculate the eigenvectors of the Laplacian, you end up with a Fourier basis for the graph,,This enables us to project the graph onto a N-dimensional Euclidean space and results in axes also known as '__spectrum__' of the graph,__ Hence the name __Spectral Convolution__
+
+It’s possible to transform both your data and your filters such that each filter is represented by a simple diagonalized matrix (all zeroes, except for values along the diagonal), that gets multiplied against a transformed version of the data. This simplification happens when you perform a Fourier Transform of your data. Fourier transforms are typically thought of in the context of functions, and (on a very high level), they represent any function as a weighted composition of simpler “frequency” functions; starting with low frequencies that explain the broad strokes pattern of the data, and ending with high frequencies that fill in the smaller details.
+
+Principle behind this:
+- Calculate the Ajacent/weight matrix and Diagonal matrix for a graph
+- Calculate the Laplacian matrix ( D- A) (give a sense of euclidean space)
+- Calculate the eigenvectors of the Laplacian matrix (Spectral domain)
+- You end up with a Fourier basis for the graph. 
+ Fourier Transform [video](https://www.youtube.com/watch?v=spUNpyF58BY).
+To build an intution of how it all ties to Fourier Transform, [this](https://www.math.ucla.edu/~tao/preprints/fourier.pdf) is an excellent paper. 
+__Key take-away__: When you calculate the eigenvectors of the Laplacian, you end up with a Fourier basis for the graph
+
+- Project both weights and data into that basis (results in a convolution)
+
+To calculate spectral convolutions through this method, you first need to calculate the full NxN Laplacian eigenvector matrix of the graph, and then multiply each filter, as well as the data itself, by that matrix. This is quite computationally intensive for large graphs, since it scales by N² for each filter.
+
+<br>
+_It’s possible to transform both your data and your filters such that each filter is represented by a simple diagonalized matrix (all zeroes, except for values along the diagonal), that gets multiplied against a transformed version of the data. This simplification happens when you perform a Fourier Transform of your data_
+
+
+To summarize it in code form:
+
+# Main Paper: 
+SEMI-SUPERVISED CLASSIFICATION WITH GRAPH CONVOLUTIONAL NETWORKS 
+https://arxiv.org/pdf/1609.02907.pdf
+
+In Kipf and Welling’s Graph Convolutional Network, a convolution is defined by: 
+
+![g_{\theta {}'} \star x \approx \sum_{k=0}^{K} \theta {}'_{k}T_{k}(\tilde{L})x](https://render.githubusercontent.com/render/math?math=g_%7B%5Ctheta%20%7B%7D'%7D%20%5Cstar%20x%20%5Capprox%20%5Csum_%7Bk%3D0%7D%5E%7BK%7D%20%5Ctheta%20%7B%7D'_%7Bk%7DT_%7Bk%7D(%5Ctilde%7BL%7D)x)
+
+
+Where gθ is a kernel (θ represents the parameters) which is applied (represented by the star) to x, a graph signal. K stands for the number of nodes away from the target node to consider (the Kth order neighborhood, with k being the the closest order neighbor). T denotes the Chebyshev polynomials as applied to L̃ which represents the equation:
+
+![\tilde{L} = \frac{2}{\lambda _{max}}L - I_{N}](https://render.githubusercontent.com/render/math?math=%5Ctilde%7BL%7D%20%3D%20%5Cfrac%7B2%7D%7B%5Clambda%20_%7Bmax%7D%7DL%20-%20I_%7BN%7D)
+
+
+Where λ max denotes the largest eigenvalue of L, the normalized graph laplacian. Multiple convolutions can be performed on a graph, and the output is aggregated into Z.
+
+__This is the main point :__ 
+
+![Z = \tilde{D}^{-\frac{1}{2}}\tilde{A}\tilde{D}^{-\frac{1}{2}}X\Theta ](https://render.githubusercontent.com/render/math?math=Z%20%3D%20%5Ctilde%7BD%7D%5E%7B-%5Cfrac%7B1%7D%7B2%7D%7D%5Ctilde%7BA%7D%5Ctilde%7BD%7D%5E%7B-%5Cfrac%7B1%7D%7B2%7D%7DX%5CTheta%20)
+
+Where Z is a matrix of convolved signals (from neighboring nodes) Ã is the adjacency matrix of the graph (plus the identity matrix), D̃ is the diagonal node degree from Ã, Θ is a matrix of kernel/filter parameters (can be shared over the whole graph), and X is a matrix of node feature vectors. The D to the power of -1/2 are parts of a renormalization trick to avoid both exploding or vanishing gradients.
+
+
+
+In a general/broad sense, the Fourier transform is a systematic way to decompose “generic” functions into a superposition of “symmetric” functions.
+
+
+
+"The Fourier transform is also related to topics in linear algebra, such as the representation of a vector as linear combinations of an orthonormal basis, or as linear combinations of eigenvectors of a matrix (or a linear operator)." - _Tao_
+
+better explanation of that can be found [here](https://www.cs.yale.edu/homes/spielman/561/2009/lect02-09.pdf
+)
+
+
+
+A graph can be represented as a matrix. For example:
+-> 
+<br> as you can see, then you can have an adjacent matrix.
+Then you can have a diagonal matrix.
+
+From that you can calculate the Laplacian matrix .
+
+\[L = D - A\]
+Insert latex in MD: 
+https://gist.github.com/a-rodin/fef3f543412d6e1ec5b6cf55bf197d7b
+
+<img src="https://render.githubusercontent.com/render/math?math=\int_{a}^{b} f(x)dx = F(b) - F(a)">
+
+
+
+
+| Syntax | Description |
+| ----------- | ----------- |
+| Header | Title |
+| Paragraph | Text |
+
+
+
+
+
+
+# For scalability:
+https://arxiv.org/pdf/1902.07153.pdf
+
+
+References:<br>
+[Graph Neural Networks:
+A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf )
+
+https://arxiv.org/pdf/1609.02907.pdf<br>
+https://towardsdatascience.com/a-tale-of-two-convolutions-differing-design-paradigms-for-graph-neural-networks-8dadffa5b4b0<br>
+https://arxiv.org/pdf/1812.08434.pdf<br>
+https://www.math.ucla.edu/~tao/preprints/fourier.pdf<br>
+
+
 
 end-to-end information extraction from receipts using GCNs
 
