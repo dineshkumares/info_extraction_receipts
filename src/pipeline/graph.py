@@ -75,12 +75,14 @@ class Grapher:
             . Received {type(image)}'
 
         
-
+        """
+        preprocessing the raw csv files to favorable df 
+        """
         df = df[0].str.split(',', expand=True)
         temp = df.copy() 
         temp[temp.columns] = temp.apply(lambda x: x.str.strip())
         temp.fillna('', inplace=True)
-        temp[8]= temp[8].str.cat(temp.iloc[:,9:-1], sep =", ") 
+        temp[8]= temp[8].str.cat(temp.iloc[:,9:], sep =", ") 
         temp[temp.columns] = temp.apply(lambda x: x.str.rstrip(", ,"))
         temp = temp.loc[:, :8]
         temp.drop([2,3,6,7], axis=1, inplace=True)
@@ -265,28 +267,26 @@ class Grapher:
             if key in dic2: result.setdefault(key, []).append(dic2[key])
         #print(result)
 
-
+        G = nx.from_dict_of_lists(result)
         
-       
-    
-
         if export_graph:
 
             if not os.path.exists('../../figures/graphs'):
                 os.makedirs('../../figures/graphs')			
 
-            G = nx.from_dict_of_lists(result)
+            
            
            
             plot_path ='../../figures/graphs/' + self.filename + 'plain_graph' '.jpg'
             print(plot_path)
-            layout = nx.kamada_kawai_layout(G)        
+            layout = nx.kamada_kawai_layout(G)   
+            layout = nx.spring_layout(G)     
             nx.draw(G, layout, with_labels=True)
             plt.savefig(plot_path, format="PNG", dpi=600)
             #plt.show()
 
         self.df = df 
-        return result, df 
+        return G,result, df 
 
 
 
@@ -443,12 +443,68 @@ class Grapher:
     # df, plot_df = relative_distance(processed_df)
     # print(plot_df)
 
+import torch
+import scipy.sparse
+import torch_geometric.data
+
+def from_networkx(G):
+    """Converts a :obj:`networkx.Graph` or :obj:`networkx.DiGraph` to a
+    :class:`torch_geometric.data.Data` instance.
+
+    Args:
+        G (networkx.Graph or networkx.DiGraph): A networkx graph.
+    """
+
+    G = nx.convert_node_labels_to_integers(G)
+    G = G.to_directed() if not nx.is_directed(G) else G
+    edge_index = torch.tensor(list(G.edges)).t().contiguous()
+
+    data = {}
+
+    for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
+        for key, value in feat_dict.items():
+            data[key] = [value] if i == 0 else data[key] + [value]
+
+    for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
+        for key, value in feat_dict.items():
+            data[key] = [value] if i == 0 else data[key] + [value]
+
+    for key, item in data.items():
+        try:
+            data[key] = torch.tensor(item)
+        except ValueError:
+            pass
+
+    data['edge_index'] = edge_index.view(2, -1)
+    data = torch_geometric.data.Data.from_dict(data)
+    data.num_nodes = G.number_of_nodes()
+
+    return data
 
 if __name__ == "__main__":
-    file = '550'
+    # file = '550'
+    # for i in range(10,50):
+    #     file = '0' + str(i)
+    #     connect = Grapher(file)
+    #     result, df = connect.graph_formation(export_graph=True)
+    #     connect.relative_distance(export_document_graph = True)
+    # print(result)
+    # print(df)
+    #file = '525'
+    file = '012'
     connect = Grapher(file)
-    result, df = connect.graph_formation(export_graph=True)
-    connect.relative_distance(export_document_graph = True)
-    print(result)
+    G,result, df = connect.graph_formation()#export_graph=True)
     print(df)
+    connect.relative_distance()#export_document_graph = True)
+    
+    torch_graph = from_networkx(G)
+    print(torch_graph)
+    print(type(torch_graph))
+    print(torch_graph.__dict__)
+
+
+    # file = '001'
+    # connect2 = Grapher(file)
+    # result2,df2 = connect.graph_formation()
+    # print(df2)
 
