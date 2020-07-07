@@ -6,6 +6,18 @@ import networkx as nx
 import numpy as np
 import os 
 
+"""
+make dataset for modeling as torch_geometric.data.Data:
+
+- x (Tensor, optional) – Node feature matrix with shape [num_nodes, num_node_features]. (default: None)
+- edge_index (LongTensor, optional) – Graph connectivity in COO format with shape [2, num_edges]. (default: None)
+- edge_attr (Tensor, optional) – Edge feature matrix with shape [num_edges, num_edge_features]. (default: None)
+- y (Tensor, optional) – Graph or node targets with arbitrary shape. (default: None)
+- pos (Tensor, optional) – Node position matrix with shape [num_nodes, num_dimensions]. (default: None)
+- norm (Tensor, optional) – Normal vector matrix with shape [num_nodes, num_dimensions]. (default: None)
+- face (LongTensor, optional) – Face adjacency matrix with shape [3, num_faces]. (default: None)
+
+"""
 
 
 def sample_mask(idx, l):
@@ -51,6 +63,9 @@ def from_networkx(G):
 
 
 def get_data():
+    """
+    returns data into a pygeometric Batch dataset format
+    """
     path = "../../data/raw/box/"
     l=os.listdir(path)
     files=[x.split('.')[0] for x in l]
@@ -59,7 +74,7 @@ def get_data():
 
     list_of_graphs = []
 
-    for file in files[:30]:
+    for file in files[:20]:
 
         connect = Grapher(file)
         G,_,_ = connect.graph_formation()
@@ -93,21 +108,46 @@ def get_data():
     data.edge_attr = None 
 
     #50,20,30 split for train,val,split
-    length_labels = len(data.y)
-    x = [_ for _ in range(length_labels)]
-    np.random.shuffle(x)
-    training_num = int(50/100 * length_labels) 
-    validation_num  = int(20/100 * length_labels )
-    testing_num = length_labels - (training_num + validation_num)
-
-    idx_train, idx_val, idx_test=\
-        x[:training_num], x[training_num:validation_num+training_num],\
-        x[-testing_num:]
+    t = data.entity
+    entity_indices = np.where(t)[0].tolist()
+    non_entity_indices = np.where(t == False)[0].tolist()
 
 
-    idx_train, idx_val, idx_test = torch.LongTensor(idx_train),\
-                                torch.LongTensor(idx_val),\
-                                torch.LongTensor(idx_test)
+    #shuffle
+    np.random.shuffle(entity_indices)
+    np.random.shuffle(non_entity_indices)
+
+    """
+    50,20,30 split for train,val,split
+    Since the data is imabalanced (many 'undefined' classes),
+    I am ensuring that there is equal proportion of entities 
+    and non entities in all the splits 50-20-30.
+
+    """
+    num_entities = len(entity_indices) 
+
+
+    training_entities= int(50/100 * num_entities) 
+    validation_entities  = int(20/100 * num_entities )
+    testing_entities = num_entities - (training_entities + validation_entities)
+
+
+    num_non_entities = len(non_entity_indices)
+
+    training_non_entities= int(50/100 * num_non_entities) 
+    validation_non_entities  = int(20/100 * num_non_entities )
+    testing_non_entities = num_non_entities - (training_non_entities + validation_non_entities)
+
+
+    print(training_entities)
+
+
+    idx_train = entity_indices[:training_entities] + non_entity_indices[:training_non_entities]
+    idx_val = entity_indices[training_entities:validation_entities+training_entities] + \
+            non_entity_indices[training_non_entities:validation_non_entities+training_non_entities]
+
+    idx_test = entity_indices[-testing_entities:] + non_entity_indices[-testing_non_entities:]
+
 
     data.train_mask = sample_mask(idx_train, data.y.shape[0])
     data.val_mask = sample_mask(idx_val, data.y.shape[0])
