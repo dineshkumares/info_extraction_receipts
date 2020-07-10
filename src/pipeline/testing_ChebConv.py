@@ -12,6 +12,10 @@ from torch.nn import Parameter
 
 from sklearn.utils import class_weight
 
+
+from sklearn.metrics import confusion_matrix
+
+
 #dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
 #data = dataset[0]
 
@@ -97,6 +101,7 @@ class Net(torch.nn.Module):
         self.conv3 = ChebConv(32, 64, K=3)
         self.conv4 = ChebConv(64, 6, K=3)
     
+    
 
         self.reg_params = self.conv1.parameters()
         
@@ -111,9 +116,9 @@ class Net(torch.nn.Module):
       
         x = F.relu(self.conv3(x, edge_index))
         
-        x = F.relu(self.conv4(x, edge_index))
-
-        #x = F.dropout(x,training=self.training)
+        #x = F.relu(self.conv4(x, edge_index))
+        
+        x = self.conv4(x, edge_index)
 
         return F.log_softmax(x, dim=1)
 
@@ -127,11 +132,6 @@ optimizer = torch.optim.Adam([
     dict(params=model.non_reg_params, weight_decay=0)
 ], lr=0.01)
 
-
-# optimizer = torch.optim.Adam([
-#     dict(params=model.reg_params, weight_decay=5e-4),
-#     dict(params=model.non_reg_params, weight_decay=0)
-# ], lr=0.01)
 
 
 def train():
@@ -149,7 +149,8 @@ def train():
     #FIX WEIGHTS
     weights = torch.FloatTensor(class_weights)
     
-   # print(weights)
+    #print(weights)
+    #weights = torch.tensor([3.3419, 9.3718, 8.9813, 8.9526, 0.1905,8.1577])
     
     loss = F.nll_loss(model()[data.train_mask], data.y[data.train_mask]-1, weight=weights)
     loss.backward()
@@ -166,20 +167,10 @@ def test():
     for mask_name, mask in data('train_mask', 'val_mask', 'test_mask'):
         pred = logits[mask].max(1)[1]
 
-        #print(pred.unique())
-        # print(pred)
-        # print(pred.unique())
-
-        #_, pred = torch.max(output, dim=1)
 
         acc = pred.eq(data.y[mask]-1).sum().item() / mask.sum().item()  
 
 
-        # print ( (data.y[mask]).sum().item() )
-
-        # print( mask.sum().item() )
-
-        # print( mask, acc)
         print(mask_name)
         print(pred)
         print(f'unique predictions: {pred.unique()}')
@@ -189,10 +180,30 @@ def test():
 
         print(f'{mask_name} accuracy is {acc}')
 
+
         # print(f'{mask}', pred.eq(data.y[mask]).sum().item() )
         # print( mask.sum().item()   )
 
+        r"printing predicted classes and number of elements for preds"
+        print('pred')
+        unique_elements, counts_elements = np.unique(pred, return_counts=True)
+        print(np.asarray((unique_elements, counts_elements)))
 
+
+        r"printing predicted classes and number of elements for actual"
+        print('actual')
+        unique_elements, counts_elements = np.unique((data.y[mask]-1), return_counts=True)
+        print(np.asarray((unique_elements, counts_elements)))
+
+        nb_classes = 6
+
+
+        conf_mat=confusion_matrix((data.y[mask]-1).numpy(), pred.numpy())
+      
+
+    # Per-class accuracy
+        class_accuracy=100*conf_mat.diagonal()/conf_mat.sum(1)
+        print(class_accuracy)
 
        # print(acc)
         accs.append(acc)
@@ -200,37 +211,37 @@ def test():
     return accs
 
 
-
+if __name__ == '__main__':
 #stopping criteria 
-counter = 0
+    counter = 0
 
 
-for epoch in range(1, args.epochs):
-    
-
-    loss = train()
-    train_acc, val_acc, test_acc = test()
-
-    with torch.no_grad():
-        #print(model()[data.val_mask])
+    for epoch in range(1, args.epochs):
         
-        loss_val = F.nll_loss(model()[data.val_mask], data.y[data.val_mask]-1)
-        #print(model()[data.val_mask])
+
+        loss = train()
+        train_acc, val_acc, test_acc = test()
+
+        with torch.no_grad():
+            #print(model()[data.val_mask])
+            
+            loss_val = F.nll_loss(model()[data.val_mask], data.y[data.val_mask]-1)
+            #print(model()[data.val_mask])
+        
     
- 
-    
-    log = 'Epoch: {:03d}, train_loss:{:.4f}, val_loss:{:.4f}, Train: {:.4f}, Val: {:.4f}, Test: {:.4f}'
-    #print(log.format(epoch,loss,loss_val, train_acc, val_acc, test_acc))
+        
+        log = 'Epoch: {:03d}, train_loss:{:.4f}, val_loss:{:.4f}, Train: {:.4f}, Val: {:.4f}, Test: {:.4f}'
+        print(log.format(epoch,loss,loss_val, train_acc, val_acc, test_acc))
 
 
-    #for first epoch
-    if epoch == 1:
-        largest_val_loss = loss_val
+        #for first epoch
+        if epoch == 1:
+            largest_val_loss = loss_val
 
-    #early stopping if the loss val does not improve/decrease for a number of epochs
-    if loss_val >= largest_val_loss:
-        counter += 1 
-        best_val_loss = loss_val
-        if counter >= args.early_stopping:
-            print(f'EarlyStopping counter: validation loss did not increase for {args.early_stopping}!!')
-            break
+        #early stopping if the loss val does not improve/decrease for a number of epochs
+        if loss_val >= largest_val_loss:
+            counter += 1 
+            best_val_loss = loss_val
+            if counter >= args.early_stopping:
+                print(f'EarlyStopping counter: validation loss did not increase for {args.early_stopping}!!')
+                break
