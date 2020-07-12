@@ -11,8 +11,6 @@ from torch_geometric.nn import GCNConv, ChebConv  # noqa
 from torch.nn import Parameter
 
 from sklearn.utils import class_weight
-
-
 from sklearn.metrics import confusion_matrix
 
 
@@ -20,6 +18,7 @@ from sklearn.metrics import confusion_matrix
 #data = dataset[0]
 
 data_path = "../../data/processed/" + "data2.dataset"
+#data_path = "../../data/processed/" + "data_withtexts.dataset"
 data = torch.load(data_path)
 
 print(data.y[data.train_mask])
@@ -41,23 +40,17 @@ parser = argparse.ArgumentParser()
 
 # Training settings
 parser = argparse.ArgumentParser()
-parser.add_argument('--no-cuda', action='store_true', default=False,
-                    help='Disables CUDA training.')
-parser.add_argument('--fastmode', action='store_true', default=False,
-                    help='Validate during training pass.')
-parser.add_argument('--seed', type=int, default=42, help='Random seed.')
+
+parser.add_argument('--model', type=str, default ='ChebConv',
+                    help = 'GCN or ChebConv model')
 parser.add_argument('--epochs', type=int, default=500,
                     help='Number of epochs to train.')
 parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
 parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
-parser.add_argument('--hidden', type=int, default=16,
-                    help='Number of hidden units.')
 parser.add_argument('--dropout', type=float, default=0.5,
-                    help='Dropout rate (1 - keep probability).')\
-
-#early stopping criteria
+                    help='Dropout rate (1 - keep probability).')
 parser.add_argument('--early_stopping', type=int, default = 50,
                     help = 'Stopping criteria for validation')
 
@@ -68,18 +61,7 @@ parser.add_argument('--use_gdc', action='store_true',
 args = parser.parse_args()
 
 
-
 print(f'number of nodes: {data.x.shape}')
-
-
-if args.use_gdc:
-    gdc = T.GDC(self_loop_weight=1, normalization_in='sym',
-                normalization_out='col',
-                diffusion_kwargs=dict(method='ppr', alpha=0.05),
-                sparsification_kwargs=dict(method='topk', k=128,
-                                           dim=0), exact=True)
-    data = gdc(data)
-
 
 
 #cached = True is for transductive learning
@@ -93,31 +75,25 @@ class Net(torch.nn.Module):
         # self.conv3 = GCNConv(32, 64, cached=True, \
         #      normalize=not args.use_gdc)        
         # self.conv4 = GCNConv(64, 6, cached=True, \
-        #      normalize=not args.use_gdc)       
-
-        
-        self.conv1 = ChebConv(data.x.shape[1], 16, K=3)
-        self.conv2 = ChebConv(16, 32, K=3)
-        self.conv3 = ChebConv(32, 64, K=3)
-        self.conv4 = ChebConv(64, 6, K=3)
-    
-    
-
-        self.reg_params = self.conv1.parameters()
-        
-        self.non_reg_params = self.conv4.parameters()
+        #      normalize=not args.use_gdc)  
+        if args.model == 'GCN':
+            self.conv1 = GCNConv(data.x.shape[1], 16, cached=True)
+            self.conv2 = GCNConv(16, 32, cached=True)  
+            self.conv3 = GCNConv(32, 64, cached=True) 
+            self.conv4 = GCNConv(64, 6, cached=True)   
+        elif args.model == 'ChebConv': 
+            self.conv1 = ChebConv(data.x.shape[1], 16, K=3)
+            self.conv2 = ChebConv(16, 32, K=3)
+            self.conv3 = ChebConv(32, 64, K=3)
+            self.conv4 = ChebConv(64, 6, K=3)
+            
 
     def forward(self):
         x, edge_index, edge_weight = data.x, data.edge_index, data.edge_attr
-        
+    
         x = F.relu(self.conv1(x, edge_index))
-       
         x = F.relu(self.conv2(x, edge_index))
-      
         x = F.relu(self.conv3(x, edge_index))
-        
-        #x = F.relu(self.conv4(x, edge_index))
-        
         x = self.conv4(x, edge_index)
 
         return F.log_softmax(x, dim=1)
@@ -127,10 +103,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model, data = Net().to(device), data.to(device)
 
 
-optimizer = torch.optim.Adam([
-    dict(params=model.reg_params, weight_decay=5e-4),
-    dict(params=model.non_reg_params, weight_decay=0)
-], lr=0.01)
+
+optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
 
 
@@ -171,18 +145,17 @@ def test():
         acc = pred.eq(data.y[mask]-1).sum().item() / mask.sum().item()  
 
 
-        print(mask_name)
-        print(pred)
-        print(f'unique predictions: {pred.unique()}')
-        print(data.y[mask]-1)
-        print('correct predicted :  ', pred.eq(data.y[mask]-1).sum().item())
-        print('total items: ' , mask.sum().item())
+        # print(mask_name)
+        # print(pred)
+        # print(f'unique predictions: {pred.unique()}')
+        # print(data.y[mask]-1)
+        # print('correct predicted :  ', pred.eq(data.y[mask]-1).sum().item())
+        # print('total items: ' , mask.sum().item())
 
-        print(f'{mask_name} accuracy is {acc}')
+        # print(f'{mask_name} accuracy is {acc}')
 
 
-        # print(f'{mask}', pred.eq(data.y[mask]).sum().item() )
-        # print( mask.sum().item()   )
+
 
         r"printing predicted classes and number of elements for preds"
         print('pred')

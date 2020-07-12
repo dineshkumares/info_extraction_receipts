@@ -8,6 +8,14 @@ import itertools
 
 import networkx as nx
 
+
+from flair.embeddings import BytePairEmbeddings
+from flair.data import Sentence
+
+# embedding = BytePairEmbeddings('en')
+
+
+
 class Grapher:
     """
     Description:
@@ -21,10 +29,12 @@ class Grapher:
     def __init__(self, filename):
         self.filename = filename 
         file_path = "../../data/raw/box/" + filename + '.csv'
+        interim_path = "../../data/interim/" + filename + '.csv'
         image_path = "../../data/raw/img/" + filename + '.jpg'
         self.df = pd.read_csv(file_path, header=None, sep='\n')
         self.image = cv2.imread(image_path)
-    
+        self.df_withlabels = pd.read_csv(interim_path)
+
     def graph_formation(self, export_graph = False):
 
         """
@@ -69,11 +79,6 @@ class Grapher:
         df, image = self.df, self.image
 
 
-        assert type(df) == pd.DataFrame,f'object_map should be of type \
-            {pd.DataFrame}. Received {type(df)}'
-        assert type(image) == np.ndarray,f'image should be of type {np.ndarray} \
-            . Received {type(image)}'
-
         
         """
         preprocessing the raw csv files to favorable df 
@@ -95,7 +100,20 @@ class Grapher:
             {pd.DataFrame}. Received {type(df)}'
         assert type(image) == np.ndarray,f'image should be of type {np.ndarray} \
             . Received {type(image)}'
+        
+        assert 'xmin' in df.columns, '"xmin" not in object map'
+        assert 'xmax' in df.columns, '"xmax" not in object map'
+        assert 'ymin' in df.columns, '"ymin" not in object map'
+        assert 'ymax' in df.columns, '"ymax" not in object map'
+        assert 'Object' in df.columns, '"Object" column not in object map'
 
+
+
+        for col in df.columns:
+            try:
+                df[col] = df[col].str.strip()
+            except AttributeError:
+                pass
 
         #remove empty spaces both in front and behind
         df.columns = df.columns.str.strip()
@@ -285,6 +303,10 @@ class Grapher:
             plt.savefig(plot_path, format="PNG", dpi=600)
             #plt.show()
 
+
+        # connect with the interim file that has labels in it
+        df['labels'] = self.df_withlabels['9']
+
         self.df = df 
         return G,result, df 
 
@@ -293,6 +315,61 @@ class Grapher:
     #features calculation
 
     #dict_graph, graph, processed_df = grapher(df, export_graph=True) #, show=True)
+
+    def get_text_features(self, df): 
+        data = df['Object'].tolist()
+        
+        '''
+            Args:
+                df
+                
+            Returns: 
+                character and word features
+                
+        '''
+        special_chars = ['&', '@', '#', '(',')','-','+', 
+                    '=', '*', '%', '.', ',', '\\','/', 
+                    '|', ':']
+
+        # character wise
+        n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special = [],[],[],[],[],[]
+
+        for words in data:
+            upper,lower,alpha,spaces,numeric,special = 0,0,0,0,0,0
+            for char in words: 
+        
+                # for lower letters 
+        
+                # for upper letters 
+                if char.isupper(): 
+                    upper += 1
+                
+                # for white spaces
+                if char.isspace():
+                    spaces += 1
+                
+                # for alphabetic chars
+                if char.isalpha():
+                    alpha += 1
+                
+                # for numeric chars
+                if char.isnumeric():
+                    numeric += 1
+                            
+                if char in special_chars:
+                    special += 1 
+
+            n_lower.append(lower)
+            n_upper.append(upper)
+            n_spaces.append(spaces)
+            n_alpha.append(alpha)
+            n_numeric.append(numeric)
+            n_special.append(special)
+            #features.append([n_lower, n_upper, n_spaces, n_alpha, n_numeric, n_digits])
+
+        df['n_upper'],df['n_alpha'],df['n_spaces'],\
+        df['n_numeric'],df['n_special'] = n_upper, n_alpha, n_spaces, n_numeric,n_special
+
 
     def relative_distance(self, export_document_graph = False):
         """ 
@@ -437,49 +514,15 @@ class Grapher:
 
         #drop the unnecessary columns
         df.drop(['destination_x_hori', 'destination_y_hori','destination_y_vert','destination_x_vert'], axis=1, inplace=True)
+
+        self.get_text_features(df)
+
         return df
 
 
     # df, plot_df = relative_distance(processed_df)
     # print(plot_df)
 
-import torch
-import scipy.sparse
-import torch_geometric.data
-
-def from_networkx(G):
-    """Converts a :obj:`networkx.Graph` or :obj:`networkx.DiGraph` to a
-    :class:`torch_geometric.data.Data` instance.
-
-    Args:
-        G (networkx.Graph or networkx.DiGraph): A networkx graph.
-    """
-
-    G = nx.convert_node_labels_to_integers(G)
-    G = G.to_directed() if not nx.is_directed(G) else G
-    edge_index = torch.tensor(list(G.edges)).t().contiguous()
-
-    data = {}
-
-    for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
-        for key, value in feat_dict.items():
-            data[key] = [value] if i == 0 else data[key] + [value]
-
-    for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
-        for key, value in feat_dict.items():
-            data[key] = [value] if i == 0 else data[key] + [value]
-
-    for key, item in data.items():
-        try:
-            data[key] = torch.tensor(item)
-        except ValueError:
-            pass
-
-    data['edge_index'] = edge_index.view(2, -1)
-    data = torch_geometric.data.Data.from_dict(data)
-    data.num_nodes = G.number_of_nodes()
-
-    return data
 
 if __name__ == "__main__":
     # file = '550'
@@ -495,16 +538,14 @@ if __name__ == "__main__":
     connect = Grapher(file)
     G,result, df = connect.graph_formation()#export_graph=True)
     print(df)
-    connect.relative_distance()#export_document_graph = True)
-    
-    torch_graph = from_networkx(G)
-    print(torch_graph)
-    print(type(torch_graph))
-    print(torch_graph.__dict__)
+    df = connect.relative_distance()#export_document_graph = True)
+    print(df)
 
 
     # file = '001'
     # connect2 = Grapher(file)
     # result2,df2 = connect.graph_formation()
     # print(df2)
+
+  
 

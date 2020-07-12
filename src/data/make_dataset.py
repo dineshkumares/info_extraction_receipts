@@ -2,6 +2,9 @@ from os import path, replace, scandir
 
 """
 This script is to format the raw data into proper formats: jpg, csv and json
+jpg is the image file
+csv is the file containing the box cordinates
+json is the file with the key
 """
 
 def noext(f):

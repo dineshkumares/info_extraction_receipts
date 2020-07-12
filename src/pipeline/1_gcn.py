@@ -8,12 +8,12 @@ import torch.nn.functional as F
 import torch_geometric.transforms as T
 from torch_geometric.nn import GCNConv, ChebConv  # noqa
 
-
+from torch.nn import Parameter
 
 #dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
 #data = dataset[0]
 
-data_path = "../../data/processed/" + "data.dataset"
+data_path = "../../data/processed/" + "data2.dataset"
 data = torch.load(data_path)
 
 parser = argparse.ArgumentParser()
@@ -48,6 +48,7 @@ args = parser.parse_args()
 
 
 
+print(f'number of nodes: {data.x.shape}')
 
 
 if args.use_gdc:
@@ -87,7 +88,37 @@ class Net(torch.nn.Module):
         x, edge_index, edge_weight = data.x, data.edge_index, data.edge_attr
         x = F.relu(self.conv1(x, edge_index, edge_weight))
         x = F.dropout(x, training=self.training)
-        x = self.conv2(x, edge_index, edge_weight)
+        print(x.shape)
+    
+     
+       # edge_weight = Parameter(torch.Tensor(16, edge_index.shape[1]))
+        #x = torch.matmul(torch.t(x),edge_weight)
+        x = self.conv2(x, edge_index, edge_weight =edge_weight)
+        print(x.shape)
+
+        x = F.relu(self.conv2(x, edge_index, edge_weight=edge_weight))
+        
+        print('done')
+        exit()
+        x = F.dropout(x, training=self.training)
+
+
+        #edge_weight = Parameter(torch.Tensor(32, 64))
+
+        x = self.conv3(x, edge_index, edge_weight=edge_weight)
+        x = F.relu(self.conv3(x, edge_index, edge_weight=edge_weight))
+        x = F.dropout(x, training=self.training)
+
+
+
+        
+        # edge_weight = Parameter(torch.Tensor(64,6))
+        # edge_weight = None
+        x = self.conv4(x, edge_index, edge_weight)
+
+
+
+
         return F.log_softmax(x, dim=1)
 
 
@@ -102,7 +133,7 @@ optimizer = torch.optim.Adam([
 def train():
     model.train()
     optimizer.zero_grad()
-    loss = F.nll_loss(model()[data.train_mask], data.y[data.train_mask])
+    loss = F.nll_loss(model()[data.train_mask], data.y[data.train_mask]-1)
     loss.backward()
     optimizer.step()
     return loss

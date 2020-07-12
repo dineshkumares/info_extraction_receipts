@@ -11,8 +11,8 @@ import networkx as nx
 
 
 
-df = pd.read_csv("000.csv")
-image = cv2.imread("000.jpg")
+# df = pd.read_csv("000.csv")
+# image = cv2.imread("000.jpg")
 
 
 
@@ -20,9 +20,9 @@ image = cv2.imread("../../data/raw/img/339.jpg")
 
 
 filename = '339.csv'
-filename = '000.csv'
+#filename = '000.csv'
 
-image = cv2.imread("../../data/raw/img/000.jpg")
+#image = cv2.imread("../../data/raw/img/000.jpg")
 
 filepath = '../../data/raw/box/'+filename
 df = pd.read_csv(filepath, header=None, sep='\n')
@@ -70,7 +70,24 @@ going line by line from left to right and at last the final bottom right word of
 1) Sort words based on Top coordinate:
 """
 #sort df by 'top' coordinate. 
-def line_formation(df):
+def line_formation(boundingbox_df):
+    """
+    args: 
+        df with words and cordinates (xmin,xmax,ymin,ymax)
+    returns: 
+        df with words arranged in orientation top to bottom and left to right
+
+    """
+    assert type(df) == pd.DataFrame,f'object_map should be of type \
+        {pd.DataFrame}. Received {type(boundingbox_df)}'
+    assert type(image) == np.ndarray,f'image should be of type {np.ndarray} \
+        . Received {type(image)}'
+
+    assert 'xmin' in boundingbox_df.columns, '"xmin" not in object map'
+    assert 'xmax' in boundingbox_df.columns, '"xmax" not in object map'
+    assert 'ymin' in boundingbox_df.columns, '"ymin" not in object map'
+    assert 'ymax' in boundingbox_df.columns, '"ymax" not in object map'
+    assert 'Object' in boundingbox_df.columns, '"Object" column not in object map'
     #remove empty spaces both in front and behind
     df.columns = df.columns.str.strip()
 
@@ -171,7 +188,7 @@ def line_formation(df):
 line_formation(df)
 
 
-
+exit()
 
 """
 Pseudocode:

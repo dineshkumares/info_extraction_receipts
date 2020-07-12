@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 import os 
 import random
+import itertools
 
 """
 make dataset for modeling as torch_geometric.data.Data:
@@ -81,12 +82,13 @@ def get_data():
         df = connect.relative_distance() 
         individual_data = from_networkx(G)
 
-        feature_cols = ['xmin', 'ymin', 'xmax', 'ymax','rd_b','line_number', 'rd_r', 'rd_t', 'rd_l',\
-                        'n_upper', 'n_alpha', 'n_spaces', 'n_numeric','n_special']
         feature_cols = ['rd_b','line_number', 'rd_r', 'rd_t', 'rd_l',\
+                'n_upper', 'n_alpha', 'n_spaces', 'n_numeric','n_special']
+                
+        feature_cols = ['xmin', 'ymin', 'xmax', 'ymax','line_number','rd_b', 'rd_r', 'rd_t', 'rd_l',\
                         'n_upper', 'n_alpha', 'n_spaces', 'n_numeric','n_special']
-        features = torch.tensor(df[feature_cols].values.astype(np.float32))
 
+        features = torch.tensor(df[feature_cols].values.astype(np.float32))
 
         for col in df.columns:
             try:
@@ -107,10 +109,12 @@ def get_data():
 
 
         labels = torch.tensor(df['num_labels'].values.astype(np.int))
-    
+
+        text = df['Object'].values
+
         individual_data.x = features
         individual_data.y = labels
-        
+        individual_data.text = text
 
         r"""Create masks"""
         if file in training:
@@ -140,15 +144,26 @@ def get_data():
     data.edge_attr = None 
 
     save_path = "../../data/processed/"  
-    torch.save(data, save_path +'data2.dataset')
+    torch.save(data, save_path +'data_withtexts.dataset')
     print('Data is saved!')
 
 
 if __name__ == "__main__":
-    get_data()
-    data_path = "../../data/processed/" + "data2.dataset"
+   #get_data()
+    data_path = "../../data/processed/" + "data_withtexts.dataset"
     data = torch.load(data_path)
-    print(data)
-    print(data.__dict__)
-    print(data.train_mask)
+    # print(data)
+    # print(data.__dict__)
+    # print(data.train_mask)
+    # print(sum(data.train_mask))
+    # print(sum(data.test_mask))
+    # print(sum(data.val_mask))
+    #print(data.__dict__)
+    print(type(data.text))
+
+
+    merged = list(itertools.chain(*data.text))
+    print(len(merged))
+    print(len(data.y))
+    #print(merged)
     
