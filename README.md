@@ -1,6 +1,9 @@
 info_extraction_receipts
 ==============================
 
+<p align="center">
+<img src="figures/figure_0.png"> 
+</p>
 
 
 # Introduction:
@@ -123,20 +126,55 @@ __ChebNets and GCNs are very similar, but their largest difference is in their c
 <img src="figures/figure_3.png">
 </p>
 
+<p align="center">
+<i><b>Abbreviated Steps of GCN:</b> https://github.com/tkipf/gcn</i>
+</p>
+
 # Steps of the Project:
-- Collect data of invoices (raw images)
-- Obtain bounding boxes for text in the images
+- Collect raw data of invoices (raw images)
+- Annonate/label all the images with relevant labels
 - Model a graph from the above information
 - Run the graph through a GCN Semi-Supoervised Learning Process to get desired outputs/classes.
 
 
+## 1) Collect Data:
+
+For the project, I am using the dataset provided in the  [ICDAR-SROIE](https://rrc.cvc.uab.es/?ch=13&com=introduction)<br>
+The dataset contains three types of files
+- Images: 1000 whole scanned receipt images.
+- Labels file: one text file for each image, containing the items items extracted via OCR.: Each receipt image has been processed by an OCR engine, which extracted texts contained in each receipt. Each word is stored as a separate row, preceded by the coordinates of its location on the image.
+(labels file can be generated with an OCR engine. An example is shown in [tess_ocr.py](src/pipeline/tess_ocr.py)
+
+
+## 2) Annonate/label all the images with relevant labels
+- Additionally, I manually labeled each image with ground truths containing the following labels: company, adddress, invoice, date, total
 
 
 
-Sources:
 
 
-[PICK: Processing Key Information Extraction from Documents using Improved Graph Learning-Convolutional Networks](https://arxiv.org/pdf/2004.07464.pdf)
+
+### 3) Graph Modeling
+
+
+
+<p align="left">
+<img src="figures/figure_4.png" width = 1000>
+</p>
+
+
+
+
+<p align="left">
+<img src="figures/figure_5.png" width = 1000>
+</p>
+
+
+
+
+
+
+
 
 
 Project Organization
