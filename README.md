@@ -50,7 +50,7 @@ A Graph _G = {V,E}_ where _V_ is the vertex set and _E_ is the edge set consists
 
 This can be easily understood by the following visual example:
 <p align="left">
-<img src="figures/figure_2.jpg" width = 500> 
+<img src="figures/figure_2.png" width = 500> 
 </p>
 
 
@@ -134,14 +134,15 @@ __ChebNets and GCNs are very similar, but their largest difference is in their c
 - Collect raw data of invoices (raw images)
 - Annonate/label all the images with relevant labels
 - Model a graph from the above information
-- Run the graph through a GCN Semi-Supoervised Learning Process to get desired outputs/classes.
+- Convert the graph to type torch geometric dataset for modeling
+- Run the graph dataset through a GCN Semi-Supoervised Learning Process for predictions.
 
 
 ## 1) Collect Data:
 
 For the project, I am using the dataset provided in the  [ICDAR-SROIE](https://rrc.cvc.uab.es/?ch=13&com=introduction)<br>
 The dataset contains three types of files
-- Images: 1000 whole scanned receipt images.
+- Images: 626 whole scanned receipt images.
 - Labels file: one text file for each image, containing the items items extracted via OCR.: Each receipt image has been processed by an OCR engine, which extracted texts contained in each receipt. Each word is stored as a separate row, preceded by the coordinates of its location on the image.
 (labels file can be generated with an OCR engine. An example is shown in [tess_ocr.py](src/pipeline/tess_ocr.py)
 
@@ -159,21 +160,90 @@ The dataset contains three types of files
 
 
 <p align="left">
-<img src="figures/figure_4.png" width = 1000>
-</p>
-
-
-
-
-<p align="left">
 <img src="figures/figure_5.png" width = 1000>
 </p>
 
 
+Graph Modeling is the most essential part of the project. There needs to be a robust and consistent method of modeling the invoices into graphs regardless of their structure/pattern. Ensuring a universal rule towards modeling the graph is an integral part of being able to form consistent graphs which will be used in graph learning. 
+
+For this project, The following structure is followed. Each word/object consists of only one neighbor in each direction with a maximum of four total edges/connections. This is strictly enforced to maintain robustness. __THe rules below ensure proper and consistent formation for any semi-structure document system for data beyond this project.__ I have adapted the graph modeling system explained in this paper: [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) 
+
+<p align="left">
+<img src="figures/figure_6.png" width = 500>
+</p>
+
+
+
+The graph modeling process includes the following steps:
+- Line formation:
+    - Sort words based on Top coordinate:
+    - Form lines as group of words which obeys the following:
+    - Two words (W_a and W_b) are in same line if:
+        Top(W_a) <= Bottom(W_b) and Bottom(W_a) >= Top(W_b)
+    - Sort words in each line based on Left coordinate
+
+- Graph formation:
+    - Read words from each line starting from topmost line going towards bottommost line
+    - For each word, perform the following:
+        - Check words which are in vertical projection with it (similar to line formation but vertically).
+        - Calculate RD_l and RD_r for each of them 
+        - Select nearest neighbour words in horizontal direction which have least magnitude of RD_l and RD_r,provided that those words do not have an edge in that direction.
+        - In case, two words have same RD_l or RD_r, the word having higher top coordinate is chosen.
+        - Repeat steps from 2.1 to 2.3 similarly for retrieving nearest neighbour words in vertical direction by taking horizontal projection, calculating RD_t and RD_b and choosing words having higher left co-ordinate incase of ambiguity
+        - Draw edges between word and its 4 nearest neighbours if they are available.
+
+_This ensures that words are read from top left corner of the image first, 
+going line by line from left to right and at last the final bottom right word of the page is read._
+
+### Breakdown of the intermediate steps:
+
+<p align="left">
+<img src="figures/figure_4.png" width = 1000>
+</p>
+
+
+### 4) Features Engineering
+Node features consisted of the following:
+- Line number of the word/Object
+- Relative distances of the word/objects if they exist (RD_l,RD_r,RD_b and RD_t) if a distance is a certain direction is missing, it is placed as 0.
+- Character level features: n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special
+- Additional features such as word embeddings can be added. It was ommited for this project as the dataset consisted of bounding boxes for a group of words rather than individual words which would cause imbalance in the number of embeddings. For a document whose bounding boxes are extracted in an individual word level, word embeddings([Byte Pair Encodings](https://en.wikipedia.org/wiki/Byte_pair_encoding) would provide a better features representation.
+- Labels were created for the manually annontated classes. Any object/word not pertaining to the desired were labeled as 'undefined' which included majority of the dataset.
+
+### 5) GCN modeling
+
+The train, validation and test sets included:
+500 receipts for training, 63 receipts for validation, and 63 for testing.
+
+- Due to the imbalanced dataset, class weights were added to ensure proper learning of weights during backpropagation of the loss. 
+- The negative log likelihood loss [NLLLoss function](https://pytorch.org/docs/master/generated/torch.nn.NLLLoss.html) was used with the following weights:
+```python
+{'company': 8.1577, 'address':3.3419, 'invoice':9.3718, 'date':8.9813, 'total':8.9526, 'undefined':0.1905]
+```
+
+Two differnt Graph Convolutional Models were used. Graph Convolutional Network and  [Chebyshev Convolutional Network](https://arxiv.org/abs/1606.09375)
+The kernel equals the sum of all Chebyshev polynomial kernels applied to the diagonal matrix of scaled Laplacian eigenvalues for each order of k up to K-1.
+
+First order simply means that the metric used to determine the similarity between 2 nodes is based on the node’s immediate neighborhood. Second order (and beyond) means the metric used to determine similarity considers a node’s immediate neighborhood, but also the similarities between the neighborhood structures (with each increasing order, the depth of which nodes are considered increases).
+
+Third order of polynomials were used.
+
+
+
+__ChebNets and GCNs are very similar, but their largest difference is in their choices for value K in eqn. 1. In a GCN, the layer wise convolution is limited to K = 1__
 
 
 
 
+| Company  | Address | Invoice | Date | Total | Undefined |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+
+
+
+## Conclusion:
+for a better one, consider each single word from Tesseract and label them which would lead to a better model.
 
 
 
@@ -183,10 +253,10 @@ Project Organization
     ├── LICENSE
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
+    │   ├── external       <- Data from third party sources. [ICDAR-SRIOE]
+    │   ├── interim        <- Intermediate data that has manually annontated labels.
+    │   ├── processed      <- The final, data in for form of a torch geometric format for modeling.
+    │   └── raw            <- raw data for this project
     │
     ├── models             <- Trained and serialized models, model predictions, or model summaries
     │
