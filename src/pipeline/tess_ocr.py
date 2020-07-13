@@ -9,7 +9,13 @@ import pandas as pd
 
 image = "../../data/raw/img/339.jpg"
 #image = "/Users/udipbohara/Desktop/Datascience_projects/info_extraction_receipts/src/pipeline/test_custom.jpg"
+
+
+output = "../../figures/tess_339.jpg"
+
+
 img = cv2.imread(image)
+
 
 
 custom_config = r'--oem 3 --psm 6'
@@ -42,9 +48,11 @@ for i in range(n_boxes):
         (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
         #print(x,y,w,h)
         text = d['text'][i]
-        img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
+      
+        img = cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 1)
         img = cv2.putText(img, text, (x, y - 1),
-                        cv2.FONT_HERSHEY_DUPLEX, 0.4, (0, 0, 255), 1)
+                cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 255), 1)
+
 
         img_height, img_width =  img.shape[0], img.shape[1]
         
@@ -64,8 +72,10 @@ df = df[df.Object != " "]
 
 print(df)
 
-# df.to_csv('test550_scratchpart2' + '.csv' ,index = False)
-# cv2.imwrite('test550_scratchpart2' + '.jpg', img)
+#df.to_csv('test550_scratchpart2' + '.csv' ,index = False)
+cv2.imwrite('test550_scratchpart2' + '.jpg', img)
+
+cv2.imwrite(output, img)
 
 # df.to_csv('test_custom' + '.csv' ,index = False)
 # cv2.imwrite('test_custom' + '.jpg', img)

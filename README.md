@@ -18,6 +18,14 @@ In order to be able to do this, here are the basic steps:
 - Optical character recognition (OCR) engine such as [Tesseract](https://tesseract-ocr.github.io) or [Google Vision](https://cloud.google.com/vision/docs/ocr).
 - Extract relevant/salient information in a digestable format such as json for storage/analytics.
 
+<p align="center">
+<img src="figures/figure_0.0.png" height=400> 
+</p>
+
+
+
+
+
 The main issue/concern with this approach is that invoices do not follow a universal pattern. 
 
 
@@ -26,14 +34,14 @@ The main issue/concern with this approach is that invoices do not follow a unive
 <img src="figures/figure_1.png"> 
 </p>
 
-__Figure 1__: _Different patterns of semi structured documents make it difficult to generalize a pattern for Information Extraction(IE)_
+__Figure 1__: _Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE)_
 
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; __Figure 1__: _Different patterns of semi structured documents make it difficult to generalize a pattern for Information Extraction(IE)_
 
 Due to the varied nature of invoices, it is difficult to have a general OCR script that recognizes each element of the dataset. 
 
 Solution:
-Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
+Semi-Supervised Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
 [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) provides for the conceptual background for this project. Top level concepts are derived from the paper and I would like to thank the authors for their contribution. 
 
 
@@ -122,14 +130,6 @@ __Consider avoiding Chebyshev to avoid overfitting.__
 __ChebNets and GCNs are very similar, but their largest difference is in their choices for value K in eqn. 1. In a GCN, the layer wise convolution is limited to K = 1__
 
 
-<p align="left">
-<img src="figures/figure_3.png">
-</p>
-
-<p align="center">
-<i><b>Abbreviated Steps of GCN:</b> https://github.com/tkipf/gcn</i>
-</p>
-
 # Steps of the Project:
 - Collect raw data of invoices (raw images)
 - Annonate/label all the images with relevant labels
@@ -192,6 +192,7 @@ The graph modeling process includes the following steps:
         - Repeat steps from 2.1 to 2.3 similarly for retrieving nearest neighbour words in vertical direction by taking horizontal projection, calculating RD_t and RD_b and choosing words having higher left co-ordinate incase of ambiguity
         - Draw edges between word and its 4 nearest neighbours if they are available.
 
+The nodes represet each word/object and edges represent the connection with other words based on the above parameters.
 _This ensures that words are read from top left corner of the image first, 
 going line by line from left to right and at last the final bottom right word of the page is read._
 
@@ -201,6 +202,12 @@ going line by line from left to right and at last the final bottom right word of
 <img src="figures/figure_4.png" width = 1000>
 </p>
 
+
+These set of rules are scalable and work for more complex structures:
+
+<p align="left">
+<img src="figures/figure_7.png" width = 1000>
+</p>
 
 ### 4) Features Engineering
 Node features consisted of the following:
@@ -217,9 +224,12 @@ The train, validation and test sets included:
 
 - Due to the imbalanced dataset, class weights were added to ensure proper learning of weights during backpropagation of the loss. 
 - The negative log likelihood loss [NLLLoss function](https://pytorch.org/docs/master/generated/torch.nn.NLLLoss.html) was used with the following weights:
-```python
+```
 {'company': 8.1577, 'address':3.3419, 'invoice':9.3718, 'date':8.9813, 'total':8.9526, 'undefined':0.1905]
 ```
+
+ 3 hidden GCN layers were stacked, the first layer learns 16 different filters (16 different graph connection patterns), and the second layer learn 32 filters, learning to recognize 32 combinations of the 16 patterns learned in layer 1. This hierarchical compositionality property, also found in CNN’s, gives the model the power to generalize to unseen layouts.
+
 
 Two differnt Graph Convolutional Models were used. Graph Convolutional Network and  [Chebyshev Convolutional Network](https://arxiv.org/abs/1606.09375)
 The kernel equals the sum of all Chebyshev polynomial kernels applied to the diagonal matrix of scaled Laplacian eigenvalues for each order of k up to K-1.
@@ -228,24 +238,70 @@ First order simply means that the metric used to determine the similarity betwee
 
 Third order of polynomials were used.
 
-
-
 __ChebNets and GCNs are very similar, but their largest difference is in their choices for value K in eqn. 1. In a GCN, the layer wise convolution is limited to K = 1__
 
 
 
+All the graphs were combined to form an unconnected adjacency matrix that consisted of 33626 nodes.<br>
+training nodes: 26947, valdiation nodes: 3221, testing nodes: 3458
 
-| Company  | Address | Invoice | Date | Total | Undefined |
-| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-| Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+<p align="left">
+<img src="figures/figure_3.png">
+</p>
+
+<p align="center">
+<i><b>Abbreviated Steps of GCN:</b> https://github.com/tkipf/gcn</i>
+</p>
 
 
+
+
+The model was trained with the following parameters:
+```
+learning rate : 0.01
+L2 regularization : 5e-10
+hidden layers : 4 
+early stopping : 50 epochs. #(if the validation loss did not decrease for 50 epochs)
+
+The best test results were: 
+epoch: 981, train_loss:0.1455, val_loss:0.7506, Train: 0.9324, Val: 0.8600, Test: 0.8713
+
+```
+ 
+
+
+Classes Accuracy:
+```
+Company : 98.5
+Address : 86.5 
+Invoic  :54.8
+Date : 53.9 
+Total : 34.9
+Undefined : 86.1]
+
+```
+
+### Confusion Matrix for testing in epoch 521:
+
+Epoch: 521, train_loss:0.1637, val_loss:0.7775, Train: 0.8614, Val: 0.7970, Test: 0.8039
+
+| Classes | Company  | Address | Invoice | Date | Total | Undefined |
+| --------| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| Company | 66  | 1  | 0  | 0  | 0 | 0  |
+| Address | 6 | 146  | 1 | 1 | 0  | 10  |
+| Invoice | 0  | 2  | 37  | 6  | 1 | 16 |
+| Date | 0  | 1 | 5  | 40 | 1  | 16  |
+| Total | 0  | 0  | 1 | 0  | 21  | 41  |
+| Undefined | 16  | 42  | 99 | 142 | 270  | 2470  |
 
 ## Conclusion:
+
+Issues with total. obscure.
+
+Using a word level approach would lead to a better performance as it would negate the inconsistencies of the bounding boxes  provided in the dataset
 for a better one, consider each single word from Tesseract and label them which would lead to a better model.
 
-
+<img src="figures/figure_8.png">
 
 Project Organization
 ------------

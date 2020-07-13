@@ -82,11 +82,9 @@ def get_data():
         df = connect.relative_distance() 
         individual_data = from_networkx(G)
 
-        feature_cols = ['rd_b','line_number', 'rd_r', 'rd_t', 'rd_l',\
+        feature_cols = ['rd_b', 'rd_r', 'rd_t', 'rd_l','line_number',\
                 'n_upper', 'n_alpha', 'n_spaces', 'n_numeric','n_special']
-                
-        feature_cols = ['xmin', 'ymin', 'xmax', 'ymax','line_number','rd_b', 'rd_r', 'rd_t', 'rd_l',\
-                        'n_upper', 'n_alpha', 'n_spaces', 'n_numeric','n_special']
+
 
         features = torch.tensor(df[feature_cols].values.astype(np.float32))
 

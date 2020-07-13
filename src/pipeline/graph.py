@@ -534,11 +534,11 @@ if __name__ == "__main__":
     # print(result)
     # print(df)
     #file = '525'
-    file = '012'
+    file = '339'
     connect = Grapher(file)
-    G,result, df = connect.graph_formation()#export_graph=True)
+    G,result, df = connect.graph_formation(export_graph=True)
     print(df)
-    df = connect.relative_distance()#export_document_graph = True)
+    df = connect.relative_distance(export_document_graph = True)
     print(df)
 
 

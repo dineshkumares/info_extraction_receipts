@@ -21,7 +21,12 @@ data_path = "../../data/processed/" + "data2.dataset"
 #data_path = "../../data/processed/" + "data_withtexts.dataset"
 data = torch.load(data_path)
 
-print(data.y[data.train_mask])
+print(f'training nodes: {data.y[data.train_mask].shape}')
+print(f'validation nodes: {data.y[data.val_mask].shape}')
+print(f'testing nodes: {data.y[data.test_mask].shape}')
+
+
+
 print(data.y.unique())
 
 print(data.y.shape)
@@ -43,10 +48,12 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--model', type=str, default ='ChebConv',
                     help = 'GCN or ChebConv model')
-parser.add_argument('--epochs', type=int, default=500,
+parser.add_argument('--epochs', type=int, default=1000,
                     help='Number of epochs to train.')
 parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
+parser.add_argument('--verbose', type=int, default=0,
+                    help='print details of the model')
 parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
 parser.add_argument('--dropout', type=float, default=0.5,
@@ -123,8 +130,8 @@ def train():
     #FIX WEIGHTS
     weights = torch.FloatTensor(class_weights)
     
-    #print(weights)
-    #weights = torch.tensor([3.3419, 9.3718, 8.9813, 8.9526, 0.1905,8.1577])
+
+    #weights = torch.tensor([8.1577,3.3419, 9.3718, 8.9813, 8.9526, 0.1905])
     
     loss = F.nll_loss(model()[data.train_mask], data.y[data.train_mask]-1, weight=weights)
     loss.backward()
@@ -156,27 +163,25 @@ def test():
 
 
 
-
-        r"printing predicted classes and number of elements for preds"
-        print('pred')
-        unique_elements, counts_elements = np.unique(pred, return_counts=True)
-        print(np.asarray((unique_elements, counts_elements)))
-
-
-        r"printing predicted classes and number of elements for actual"
-        print('actual')
-        unique_elements, counts_elements = np.unique((data.y[mask]-1), return_counts=True)
-        print(np.asarray((unique_elements, counts_elements)))
-
-        nb_classes = 6
+        if args.verbose == 1:
+            r"printing predicted classes and number of elements for preds"
+            print('pred')
+            unique_elements, counts_elements = np.unique(pred, return_counts=True)
+            print(np.asarray((unique_elements, counts_elements)))
 
 
-        conf_mat=confusion_matrix((data.y[mask]-1).numpy(), pred.numpy())
-      
+            r"printing predicted classes and number of elements for actual"
+            print('actual')
+            unique_elements, counts_elements = np.unique((data.y[mask]-1), return_counts=True)
+            print(np.asarray((unique_elements, counts_elements)))
 
-    # Per-class accuracy
-        class_accuracy=100*conf_mat.diagonal()/conf_mat.sum(1)
-        print(class_accuracy)
+
+
+            conf_mat=confusion_matrix((data.y[mask]-1).numpy(), pred.numpy())
+        # Per-class accuracy
+            print(f'confusion_matrix   is   {conf_mat}')
+            class_accuracy=100*conf_mat.diagonal()/conf_mat.sum(1)
+            print(class_accuracy)
 
        # print(acc)
         accs.append(acc)

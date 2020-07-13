@@ -66,8 +66,10 @@ def visualize_labels(img_name, save_img = False):
 
 
 if __name__ == "__main__":
-    visualize_labels('009', save_img = True)
-    visualize_textboxes('009', save_img = True)
-  
+    visualize_labels('619', save_img = True)
+    #visualize_textboxes('619', save_img = True)
+    visualize_labels('580', save_img = True)
+    visualize_labels('395', save_img = True)
+    #visualize_textboxes('580', save_img = True)  
 
     
