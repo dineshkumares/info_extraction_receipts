@@ -522,27 +522,11 @@ class Grapher:
 
 
 if __name__ == "__main__":
-    # file = '550'
-    # for i in range(10,50):
-    #     file = '0' + str(i)
-    #     connect = Grapher(file)
-    #     result, df = connect.graph_formation(export_graph=True)
-    #     connect.relative_distance(export_document_graph = True)
-    # print(result)
-    # print(df)
-    #file = '525'
     file = '339'
     connect = Grapher(file)
     G,result, df = connect.graph_formation(export_graph=True)
-    print(df)
     df = connect.relative_distance(export_document_graph = True)
-    print(df)
-
-
-    # file = '001'
-    # connect2 = Grapher(file)
-    # result2,df2 = connect.graph_formation()
-    # print(df2)
+    
 
   
 

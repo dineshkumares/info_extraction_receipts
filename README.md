@@ -10,6 +10,25 @@ A scalable and robust method of extracting relevant information from semi-struct
 <i>Figure: Extraction of information from a document</i>
 </p>
 
+
+
+
+Table of Contents:
+--------
+
+- [Introduction](#Introduction)
+- [Why Graphs?](#Why%20Graphs?)
+- [Graph Convolutional Networks (GCNs)](#Graph%20Convolutional%20Networks%20(GCNs))
+- [Steps of the Project](#Steps%20of%20the%20Project)
+  + [Data Collection](#1.%20Data%20Collection)
+  + [Labeling](#2.%20Labeling)
+  + [Graph Modeling](#3.%20Graph%20Modeling)
+  + [Features Engineering](#4.%20Features%20Engineering)
+  + [GCN Modeling](#5.%20GCN%20modeling)
+- [Conclusion](#Conclusion)
+- [Code Organization](#Project%20Organization)
+
+
 # Introduction:
 
 Automated Information extraction is the process of extracting structured information from unstructured/semi structured documents. This project focuses on semi-structured documents. Semi-structured documents are documents such as invoices or purchase orders that do not follow a strict format the way structured forms do, and are not bound to specified data fields. 
@@ -29,12 +48,8 @@ In order to be able to do this, here are the basic steps:
 </p>
 
 <p align="center">
-<i> An example of using an OCR engine: Tesseract for text extraction.</i>
+<i> Figure: An example of using an OCR engine: Tesseract for text extraction.</i>
 </p>
-
-
-
-
 
 The main issue/concern with this approach is that invoices do not follow a universal pattern. Utilities such as regex could be used to extract information based on pattern but it is not a scalable solution. As the data size increases, there is the need to deal with different patterns of documents which would break a brute-force searching algorithm.
 
@@ -69,11 +84,14 @@ This can be easily understood by the following visual example:
 <img src="figures/figure_2.png" width = 500> 
 </p>
 
-
+<p align="center">
+<i> Figure: Visual Illustration of how a graph can be represented in matrices.</i>
+</p>
 
 # Graph Convolutional Networks (GCNs)
 
 Graph Neural Networks is a subset of deep learning with a good amount of research done in it. [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf). This [medium article](https://towardsdatascience.com/graph-convolutional-networks-for-geometric-deep-learning-1faf17dee008) provides excellent introduction to Graph Neural Networks.
+
 
 Why are GCNs called convolutions?
 
@@ -108,7 +126,7 @@ Principle behind this:
 - You end up with a Fourier basis for the graph. 
 - Project both weights and data into that basis (results in a convolution)
 
- Fourier Transform [video](https://www.youtube.com/watch?v=spUNpyF58BY). Better explanation of that can be found [here](https://www.cs.yale.edu/homes/spielman/561/2009/lect02-09.pdf
+ Fourier Transform [video](https://www.youtube.com/watch?v=spUNpyF58BY). Better explanation of that can be found [here](https://www.cs.yale.edu/homes/spielman/561/2009/lect02-09.pdf)
 To build an intution of how it all ties to Fourier Transform, [this](https://www.math.ucla.edu/~tao/preprints/fourier.pdf) is an excellent paper. 
 __Key take-away__: When you calculate the eigenvectors of the Laplacian, you end up with a Fourier basis for the graph
 
@@ -149,7 +167,7 @@ __ChebNets and GCNs are very similar, but their largest difference is in their c
 - Run the graph dataset through a GCN Semi-Supoervised Learning Process for predictions.
 
 
-## 1) Collect Data:
+### 1. Data Collection
 
 For the project, I am using the dataset provided in the  [ICDAR-SROIE](https://rrc.cvc.uab.es/?ch=13&com=introduction)<br>
 The dataset contains three types of files
@@ -158,12 +176,12 @@ The dataset contains three types of files
 (labels file can be generated with an OCR engine. An example is shown in [tess_ocr.py](src/pipeline/tess_ocr.py)
 - The labels file does not contain word level bounding boxes. It consists of inconsistent bounding criteria. Knowing that, I have still used the file as it was more convenient for me. A word level OCR as mentioned above would yield in a better performance.
 
-## 2) Annonate/label all the images with relevant labels
+### 2. Labeling
 - Additionally, I manually labeled each image with ground truths containing the following labels: company, adddress, invoice, date, total
 
 
 
-### 3) Graph Modeling
+### 3. Graph Modeling
 
 
 
@@ -221,7 +239,7 @@ These set of rules are scalable and work for more complex structures:
 <img src="figures/figure_7.png" width = 1000>
 </p>
 
-### 4) Features Engineering
+### 4. Features Engineering
 Node features consisted of the following:
 - Line number of the word/Object
 - Relative distances of the word/objects if they exist (RD_l,RD_r,RD_b and RD_t) if a distance is a certain direction is missing, it is placed as 0.
@@ -229,7 +247,7 @@ Node features consisted of the following:
 - Additional features such as word embeddings can be added. It was ommited for this project as the dataset consisted of bounding boxes for a group of words rather than individual words which would cause imbalance in the number of embeddings. For a document whose bounding boxes are extracted in an individual word level, word embeddings([Byte Pair Encodings](https://en.wikipedia.org/wiki/Byte_pair_encoding) would provide a better features representation.
 - Labels were created for the manually annontated classes. Any object/word not pertaining to the desired were labeled as 'undefined' which included majority of the dataset.
 
-### 5) GCN modeling
+### 5. GCN modeling
 
 The train, validation and test sets included:
 500 receipts for training, 63 receipts for validation, and 63 for testing.
@@ -275,7 +293,7 @@ The model was trained with the following parameters:
 learning rate : 0.01
 L2 regularization : 5e-10
 hidden layers : 4 
-early stopping : 50 epochs. #(if the validation loss did not decrease for 50 epochs)
+early stopping : 50 epochs. (if the validation loss did not decrease for 50 epochs)
 
 The best test results were: 
 epoch: 981, train_loss:0.1455, val_loss:0.7506, Train: 0.9324, Val: 0.8600, Test: 0.8713
@@ -298,6 +316,7 @@ __There is a spillage of 'total' into undefined due to obscurity later discussed
 
 Epoch: 521, train_loss:0.1637, val_loss:0.7775, Train: 0.8614, Val: 0.7970, Test: 0.8039
 
+
 | Classes | Company  | Address | Invoice | Date | Total | Undefined |
 | --------| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
 | Company | 66  | 1  | 0  | 0  | 0 | 0  |
@@ -307,7 +326,11 @@ Epoch: 521, train_loss:0.1637, val_loss:0.7775, Train: 0.8614, Val: 0.7970, Test
 | Total | 0  | 0  | 1 | 0  | 21  | 41  |
 | Undefined | 16  | 42  | 99 | 142 | 270  | 2470  |
 
-## Conclusion:
+<p align="center">
+<i>Table: Confusion matrix for the classes.</i>
+</p>
+
+## Conclusion
 
 The biggest issue with my approach as I have mentioned above, is that there is inconsistencies in the bounding boxes for the texts provided in the raw dataset. Due to this, manual annontation was difficult as some objects would have double meanings.
 For example: 'total amount' was difficult to have a consistent pattern as some bounding boxes consisted of currency letters too. Also, some totals were inclusive of the taxes whereas others did not have the option around it. Basically, there were many 'totals' in the invoice with inconsistencies.
@@ -325,13 +348,13 @@ for a better one, consider each single word from Tesseract and label them which 
 
 <img src="figures/figure_8.png">
 
-Inconsistencies in the provided bounding boxes. 
+<p align="center">
+<i>Figure: Inconsistencies in the provided bounding boxes.</i>
+</p>
 
-Project Organization
+## Project Organization
 ------------
 
-    ├── LICENSE
-    ├── README.md          <- The top-level README for developers using this project.
     ├── data
     │   ├── external       <- Data from third party sources. [ICDAR-SRIOE]
     │   ├── interim        <- Intermediate data that has manually annontated labels.
@@ -353,11 +376,10 @@ Project Organization
     │   │   └── make_dataset.py
     │   │   
     │   │
-    │   ├── models         <- Scripts to train,validate and test the model 
-    │   │   │               
-    │   │   ├── final_model.py
+    │   ├── models         <- Scripts to train,validate and test the GCN model 
+    │   │   └── final_model.py
     │   │   
-    │   ├── pipeline
+    │   └── pipeline
     │       ├── graph.py            <- Construct a graph from raw data. (export figures of graphs)
     │       ├── graph_to_data.py    <- Convert graph to a Torch Geometric dataset for modeling.
     │       ├── tess_ocr.py         <- Convert any document to image formate
@@ -365,7 +387,7 @@ Project Organization
     │
     ├── LICENSE         
     │
-    ├── README.md        <- Jupyter notebooks. 
+    └── README.md       
 
 --------
 
@@ -379,6 +401,7 @@ https://arxiv.org/pdf/1812.08434.pdf<br>
 https://www.math.ucla.edu/~tao/preprints/fourier.pdf<br>
 <br>
 https://arxiv.org/pdf/1606.09375.pdf
+
 
 
 

@@ -6,7 +6,6 @@ import networkx as nx
 import numpy as np
 import os 
 import random
-import itertools
 
 """
 make dataset for modeling as torch_geometric.data.Data:
@@ -147,21 +146,4 @@ def get_data():
 
 
 if __name__ == "__main__":
-   #get_data()
-    data_path = "../../data/processed/" + "data_withtexts.dataset"
-    data = torch.load(data_path)
-    # print(data)
-    # print(data.__dict__)
-    # print(data.train_mask)
-    # print(sum(data.train_mask))
-    # print(sum(data.test_mask))
-    # print(sum(data.val_mask))
-    #print(data.__dict__)
-    print(type(data.text))
-
-
-    merged = list(itertools.chain(*data.text))
-    print(len(merged))
-    print(len(data.y))
-    #print(merged)
-    
+    get_data()
