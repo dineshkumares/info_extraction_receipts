@@ -6,6 +6,9 @@ A scalable and robust method of extracting relevant information from semi-struct
 <img src="figures/figure_0.png"> 
 </p>
 
+<p align="center">
+<i>Figure: Extraction of information from a document</i>
+</p>
 
 # Introduction:
 
@@ -26,7 +29,7 @@ In order to be able to do this, here are the basic steps:
 </p>
 
 <p align="center">
-An example of using an OCR engine: Tesseract for text extraction.
+<i> An example of using an OCR engine: Tesseract for text extraction.</i>
 </p>
 
 
@@ -41,8 +44,9 @@ The main issue/concern with this approach is that invoices do not follow a unive
 <img src="figures/figure_1.png"> 
 </p>
 
-__Figure 1__: _Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE)_
-
+<p align="center">
+<i> Figure 1: Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE) </i>
+</p>
 
 # Solution:
 What if we could have some labeled data, and use a transductive learning method where a model could predict the labels for the rest of the data? This approach would be highly scalable and convenient for a lot of problems pertaining to the domain.
@@ -61,7 +65,7 @@ A Graph _G = {V,E}_ where _V_ is the vertex set and _E_ is the edge set consists
 - _L_: Graph Laplacian  (_L = D - A_)
 
 This can be easily understood by the following visual example:
-<p align="left">
+<p align="center">
 <img src="figures/figure_2.png" width = 500> 
 </p>
 
@@ -177,6 +181,7 @@ For this project, The following structure is followed. Each word/object consists
 <img src="figures/figure_6.png" width = 500>
 </p>
 
+
 _Figure: Graph modeling system explained in this paper: [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12)_ 
 
 The graph modeling process includes the following steps:
@@ -198,15 +203,17 @@ The graph modeling process includes the following steps:
         - Draw edges between word and its 4 nearest neighbours if they are available.
 
 The nodes represet each word/object and edges represent the connection with other words based on the above parameters.
+
 _This ensures that words are read from top left corner of the image first, 
 going line by line from left to right and at last the final bottom right word of the page is read._
 
-### Breakdown of the intermediate steps:
+
 
 <p align="left">
 <img src="figures/figure_4.png" width = 1000>
 </p>
 
+_Figure: Breakdown of the intermediate steps bounding boxes, labeling and graph modeling_
 
 These set of rules are scalable and work for more complex structures:
 
@@ -229,8 +236,10 @@ The train, validation and test sets included:
 
 - Due to the imbalanced dataset, class weights were added to ensure proper learning of weights during backpropagation of the loss. 
 - The negative log likelihood loss [NLLLoss function](https://pytorch.org/docs/master/generated/torch.nn.NLLLoss.html) was used with the following weights:
+
+Following were the weights used to handle the imbalance in the dataset.
 ```
-{'company': 8.1577, 'address':3.3419, 'invoice':9.3718, 'date':8.9813, 'total':8.9526, 'undefined':0.1905]
+{'company': 8.1577, 'address':3.3419, 'invoice':9.3718, 'date':8.9813, 'total':8.9526, 'undefined':0.1905}
 ```
 
  3 hidden GCN layers were stacked, the first layer learns 16 different filters (16 different graph connection patterns), and the second layer learn 32 filters, learning to recognize 32 combinations of the 16 patterns learned in layer 1. This hierarchical compositionality property, also found in CNN’s, gives the model the power to generalize to unseen layouts.
@@ -326,40 +335,37 @@ Project Organization
     ├── data
     │   ├── external       <- Data from third party sources. [ICDAR-SRIOE]
     │   ├── interim        <- Intermediate data that has manually annontated labels.
-    │   ├── processed      <- The final, data in for form of a torch geometric format for modeling.
-    │   └── raw            <- raw data for this project
+    │   ├── processed      <- Final data in format torch geometric format for modelling.
+    │   └── raw            <- raw data for this project (cleaned filenames)
     │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
+    ├── notebooks          <- Jupyter notebooks. 
     │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
     │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-    │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    ├── reports            <- Generated graphics and figures to be used in reporting
+    │   
     │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment
-
+    │
     ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
+    │   │ 
     │   │
-    │   ├── data           <- Scripts to download or generate data
+    │   ├── data           <- Script to format data from 'external' to 'raw'
     │   │   └── make_dataset.py
+    │   │   
     │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-
-
+    │   ├── models         <- Scripts to train,validate and test the model 
+    │   │   │               
+    │   │   ├── final_model.py
+    │   │   
+    │   ├── pipeline
+    │       ├── external       <- Data from third party sources. [ICDAR-SRIOE]
+    │       ├── interim        <- Intermediate data that has manually annontated labels.
+    │       ├── processed      <- Final data in format torch geometric format for modelling.
+    │       └── raw 
+    │
+    ├── LICENSE         
+    │
+    ├── README.md        <- Jupyter notebooks. 
 
 --------
 
