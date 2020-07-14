@@ -1,5 +1,6 @@
 info_extraction_receipts
 ==============================
+A scalable and robust method of extracting relevant information from semi-structured documents(invoices, reciepts, ID cards, licenses and so on) using Graph Convolutional Networks(GCNs).
 
 <p align="center">
 <img src="figures/figure_0.png"> 
@@ -8,25 +9,31 @@ info_extraction_receipts
 
 # Introduction:
 
-Automated Information extraction is the process of extracting structured information from unstructured/semi structured documents. This project focuses on semi-structured documents. Semi-structured documents are documents such as invoices or purchase orders that do not follow a strict format the way structured forms to, and are not bound to specified data fields. 
-Information Extraction holds a lot of potential in automation. To name a few applications:
+Automated Information extraction is the process of extracting structured information from unstructured/semi structured documents. This project focuses on semi-structured documents. Semi-structured documents are documents such as invoices or purchase orders that do not follow a strict format the way structured forms do, and are not bound to specified data fields. 
+Automated Information Extraction holds a lot of potential in the industry. As labeling data can be a very tedious job, using a machine learning techniuqe can improve efficacy and preserve work hours or the need to employ third party sources for labeling. 
+
+To name a couple of applications:
 - Automatically scan images of invoices (bills) to extract valuable information.
 - Build an automated system to automatically store revelant information from an invoice: eg: company name, address, date, invoice number, total  
 
 In order to be able to do this, here are the basic steps:
 - Gather raw data (invoice images)
-- Optical character recognition (OCR) engine such as [Tesseract](https://tesseract-ocr.github.io) or [Google Vision](https://cloud.google.com/vision/docs/ocr).
+- Optical character recognition (OCR) engine such as [Tesseract](https://tesseract-ocr.github.io) or [Google Vision](https://cloud.google.com/vision/docs/ocr). This process is very simple and straightforward as shown in [tess_ocr.py](src/pipeline/tess_ocr.py)
 - Extract relevant/salient information in a digestable format such as json for storage/analytics.
 
 <p align="center">
 <img src="figures/figure_0.0.png" height=400> 
 </p>
 
+<p align="center">
+An example of using an OCR engine: Tesseract for text extraction.
+</p>
 
 
 
 
-The main issue/concern with this approach is that invoices do not follow a universal pattern. 
+
+The main issue/concern with this approach is that invoices do not follow a universal pattern. Utilities such as regex could be used to extract information based on pattern but it is not a scalable solution. As the data size increases, there is the need to deal with different patterns of documents which would break a brute-force searching algorithm.
 
 
 
@@ -36,19 +43,16 @@ The main issue/concern with this approach is that invoices do not follow a unive
 
 __Figure 1__: _Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE)_
 
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; __Figure 1__: _Different patterns of semi structured documents make it difficult to generalize a pattern for Information Extraction(IE)_
 
-Due to the varied nature of invoices, it is difficult to have a general OCR script that recognizes each element of the dataset. 
+# Solution:
+What if we could have some labeled data, and use a transductive learning method where a model could predict the labels for the rest of the data? This approach would be highly scalable and convenient for a lot of problems pertaining to the domain.
 
-Solution:
-Semi-Supervised Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
+Semi-Supervised Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__ :. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
 [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) provides for the conceptual background for this project. Top level concepts are derived from the paper and I would like to thank the authors for their contribution. 
 
 
 
 # Why Graphs?
-"The aggregation over the neighborhood of a node in the network is analogue to a pooling operation in a convolutional neural network and the multiplication with the weight matrix W is analogue to a filtering operation. Although these operations are similar — hence the similarity in names between GCNs and CNNs — they are not the same.
-"
 
 Simple introduction to Graphs and Graph Convolutional Networks (GCNs):<br>
 A Graph _G = {V,E}_ where _V_ is the vertex set and _E_ is the edge set consists of three main components:
@@ -67,12 +71,15 @@ This can be easily understood by the following visual example:
 
 Graph Neural Networks is a subset of deep learning with a good amount of research done in it. [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf). This [medium article](https://towardsdatascience.com/graph-convolutional-networks-for-geometric-deep-learning-1faf17dee008) provides excellent introduction to Graph Neural Networks.
 
+Why are GCNs called convolutions?
+
+The aggregation over the neighborhood of a node in the network is analogue to a pooling operation in a convolutional neural network and the multiplication with the weight matrix W is analogue to a filtering operation. Although these operations are similar — hence the similarity in names between GCNs and CNNs — they are not the same.
+
 
 Why Conventional Convolutional Neural Network methods dont work:
 - There is no Euclidean distance in graphs.
 - Graphs have a certain number of nodes. 
 - There is no notion of direction in graphs.
-
 
 For the sake of conciseness, here are the basic steps that involve Graph Spectral Convolution in a highly simplified manner:
 - Transform the graph into the spectral domain using eigendecomposition
@@ -145,13 +152,10 @@ The dataset contains three types of files
 - Images: 626 whole scanned receipt images.
 - Labels file: one text file for each image, containing the items items extracted via OCR.: Each receipt image has been processed by an OCR engine, which extracted texts contained in each receipt. Each word is stored as a separate row, preceded by the coordinates of its location on the image.
 (labels file can be generated with an OCR engine. An example is shown in [tess_ocr.py](src/pipeline/tess_ocr.py)
-
+- The labels file does not contain word level bounding boxes. It consists of inconsistent bounding criteria. Knowing that, I have still used the file as it was more convenient for me. A word level OCR as mentioned above would yield in a better performance.
 
 ## 2) Annonate/label all the images with relevant labels
 - Additionally, I manually labeled each image with ground truths containing the following labels: company, adddress, invoice, date, total
-
-
-
 
 
 
@@ -163,16 +167,17 @@ The dataset contains three types of files
 <img src="figures/figure_5.png" width = 1000>
 </p>
 
+_Figure: The graph modeling which results in transforming the document to a digestable graph format for the Graph Convolutional Network algorithm_ 
 
 Graph Modeling is the most essential part of the project. There needs to be a robust and consistent method of modeling the invoices into graphs regardless of their structure/pattern. Ensuring a universal rule towards modeling the graph is an integral part of being able to form consistent graphs which will be used in graph learning. 
 
-For this project, The following structure is followed. Each word/object consists of only one neighbor in each direction with a maximum of four total edges/connections. This is strictly enforced to maintain robustness. __THe rules below ensure proper and consistent formation for any semi-structure document system for data beyond this project.__ I have adapted the graph modeling system explained in this paper: [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) 
+For this project, The following structure is followed. Each word/object consists of only one neighbor in each direction with a maximum of four total edges/connections. This is strictly enforced to maintain robustness. __THe rules below ensure proper and consistent formation for any semi-structure document system for data beyond this project.__ 
 
 <p align="left">
 <img src="figures/figure_6.png" width = 500>
 </p>
 
-
+_Figure: Graph modeling system explained in this paper: [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12)_ 
 
 The graph modeling process includes the following steps:
 - Line formation:
@@ -267,19 +272,18 @@ The best test results were:
 epoch: 981, train_loss:0.1455, val_loss:0.7506, Train: 0.9324, Val: 0.8600, Test: 0.8713
 
 ```
- 
 
 
 Classes Accuracy:
 ```
-Company : 98.5
-Address : 86.5 
-Invoic  :54.8
-Date : 53.9 
-Total : 34.9
-Undefined : 86.1]
-
+Company  : 98.5
+Address  : 86.5 
+Invoic   : 54.8
+Date     : 53.9 
+Total    : 34.9
+Undefined : 86.1
 ```
+__There is a spillage of 'total' into undefined due to obscurity later discussed in the conclusion__ 
 
 ### Confusion Matrix for testing in epoch 521:
 
@@ -296,12 +300,23 @@ Epoch: 521, train_loss:0.1637, val_loss:0.7775, Train: 0.8614, Val: 0.7970, Test
 
 ## Conclusion:
 
-Issues with total. obscure.
+The biggest issue with my approach as I have mentioned above, is that there is inconsistencies in the bounding boxes for the texts provided in the raw dataset. Due to this, manual annontation was difficult as some objects would have double meanings.
+For example: 'total amount' was difficult to have a consistent pattern as some bounding boxes consisted of currency letters too. Also, some totals were inclusive of the taxes whereas others did not have the option around it. Basically, there were many 'totals' in the invoice with inconsistencies.
+This caused erroneous learning as graph patterns are very dependent on having a consistent frame of reference.
+
+For example:
+Total : 20
+20
+Total Inc Taxes : 20 
+
+Similar issue was for Invoice and date. 
 
 Using a word level approach would lead to a better performance as it would negate the inconsistencies of the bounding boxes  provided in the dataset
-for a better one, consider each single word from Tesseract and label them which would lead to a better model.
+for a better one, consider each single word from Tesseract and label them which would yield a better model.
 
 <img src="figures/figure_8.png">
+
+Inconsistencies in the provided bounding boxes. 
 
 Project Organization
 ------------
@@ -358,3 +373,6 @@ https://arxiv.org/pdf/1812.08434.pdf<br>
 https://www.math.ucla.edu/~tao/preprints/fourier.pdf<br>
 <br>
 https://arxiv.org/pdf/1606.09375.pdf
+
+
+

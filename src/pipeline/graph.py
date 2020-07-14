@@ -12,9 +12,6 @@ import networkx as nx
 from flair.embeddings import BytePairEmbeddings
 from flair.data import Sentence
 
-# embedding = BytePairEmbeddings('en')
-
-
 
 class Grapher:
     """
