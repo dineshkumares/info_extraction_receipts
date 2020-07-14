@@ -358,10 +358,10 @@ Project Organization
     │   │   ├── final_model.py
     │   │   
     │   ├── pipeline
-    │       ├── external       <- Data from third party sources. [ICDAR-SRIOE]
-    │       ├── interim        <- Intermediate data that has manually annontated labels.
-    │       ├── processed      <- Final data in format torch geometric format for modelling.
-    │       └── raw 
+    │       ├── graph.py            <- Construct a graph from raw data. (export figures of graphs)
+    │       ├── graph_to_data.py    <- Convert graph to a Torch Geometric dataset for modeling.
+    │       ├── tess_ocr.py         <- Convert any document to image formate
+    │       └── visualize.py        <- Visualize/export bounding boxes and labels
     │
     ├── LICENSE         
     │
