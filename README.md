@@ -1,4 +1,4 @@
-info_extraction_receipts
+Information Extraction of Semi-Structured Documents.
 ==============================
 A scalable and robust method of extracting relevant information from semi-structured documents(invoices, reciepts, ID cards, licenses and so on) using Graph Convolutional Networks(GCNs).
 
@@ -63,7 +63,7 @@ The main issue/concern with this approach is that invoices do not follow a unive
 <i> Figure 1: Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE) </i>
 </p>
 
-# Solution:
+## Solution:
 What if we could have some labeled data, and use a transductive learning method where a model could predict the labels for the rest of the data? This approach would be highly scalable and convenient for a lot of problems pertaining to the domain.
 
 Semi-Supervised Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__ :. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
@@ -131,7 +131,7 @@ To build an intution of how it all ties to Fourier Transform, [this](https://www
 __Key take-away__: When you calculate the eigenvectors of the Laplacian, you end up with a Fourier basis for the graph
 
 
-# Main Paper: 
+## Main Paper: 
 SEMI-SUPERVISED CLASSIFICATION WITH GRAPH CONVOLUTIONAL NETWORKS 
 https://arxiv.org/pdf/1609.02907.pdf
 
@@ -336,12 +336,12 @@ The biggest issue with my approach as I have mentioned above, is that there is i
 For example: 'total amount' was difficult to have a consistent pattern as some bounding boxes consisted of currency letters too. Also, some totals were inclusive of the taxes whereas others did not have the option around it. Basically, there were many 'totals' in the invoice with inconsistencies.
 This caused erroneous learning as graph patterns are very dependent on having a consistent frame of reference.
 
-For example:
-Total : 20
-20
-Total Inc Taxes : 20 
+For example:<br>
+Total : 20<br>
+20<br>
+Total Inc Taxes : 20 <br>
 
-Similar issue was for Invoice and date. 
+Similar issues were for Invoice and date. 
 
 Using a word level approach would lead to a better performance as it would negate the inconsistencies of the bounding boxes  provided in the dataset
 for a better one, consider each single word from Tesseract and label them which would yield a better model.
