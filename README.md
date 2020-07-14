@@ -10,9 +10,6 @@ A scalable and robust method of extracting relevant information from semi-struct
 <i>Figure: Extraction of information from a document</i>
 </p>
 
-
-
-
 Table of Contents:
 --------
 
@@ -30,7 +27,6 @@ Table of Contents:
 
 
 # Introduction:
-
 Automated Information extraction is the process of extracting structured information from unstructured/semi structured documents. This project focuses on semi-structured documents. Semi-structured documents are documents such as invoices or purchase orders that do not follow a strict format the way structured forms do, and are not bound to specified data fields. 
 Automated Information Extraction holds a lot of potential in the industry. As labeling data can be a very tedious job, using a machine learning techniuqe can improve efficacy and preserve work hours or the need to employ third party sources for labeling. 
 
@@ -53,8 +49,6 @@ In order to be able to do this, here are the basic steps:
 
 The main issue/concern with this approach is that invoices do not follow a universal pattern. Utilities such as regex could be used to extract information based on pattern but it is not a scalable solution. As the data size increases, there is the need to deal with different patterns of documents which would break a brute-force searching algorithm.
 
-
-
 <p align="center">
 <img src="figures/figure_1.png"> 
 </p>
@@ -63,16 +57,14 @@ The main issue/concern with this approach is that invoices do not follow a unive
 <i> Figure 1: Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE) </i>
 </p>
 
-## Solution:
+### Solution:
 What if we could have some labeled data, and use a transductive learning method where a model could predict the labels for the rest of the data? This approach would be highly scalable and convenient for a lot of problems pertaining to the domain.
 
 Semi-Supervised Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__ :. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
 [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) provides for the conceptual background for this project. Top level concepts are derived from the paper and I would like to thank the authors for their contribution. 
 
-
-
 # Why Graphs?
-
+Graphs provide a robust data structure to approach the problem which can be used for transductive learning.
 Simple introduction to Graphs and Graph Convolutional Networks (GCNs):<br>
 A Graph _G = {V,E}_ where _V_ is the vertex set and _E_ is the edge set consists of three main components:
 - _A_: Adjacency matrix of a graph: Represents the connection between the nodes.
@@ -154,8 +146,6 @@ The kernel equals the sum of all Chebyshev polynomial kernels applied to the dia
 
 First order simply means that the metric used to determine the similarity between 2 nodes is based on the node’s immediate neighborhood. Second order (and beyond) means the metric used to determine similarity considers a node’s immediate neighborhood, but also the similarities between the neighborhood structures (with each increasing order, the depth of which nodes are considered increases).
 
-__Consider avoiding Chebyshev to avoid overfitting.__
-
 __ChebNets and GCNs are very similar, but their largest difference is in their choices for value K in eqn. 1. In a GCN, the layer wise convolution is limited to K = 1__
 
 
@@ -168,23 +158,17 @@ __ChebNets and GCNs are very similar, but their largest difference is in their c
 
 
 ### 1. Data Collection
-
 For the project, I am using the dataset provided in the  [ICDAR-SROIE](https://rrc.cvc.uab.es/?ch=13&com=introduction)<br>
-The dataset contains three types of files
+The dataset contains these files:
 - Images: 626 whole scanned receipt images.
 - Labels file: one text file for each image, containing the items items extracted via OCR.: Each receipt image has been processed by an OCR engine, which extracted texts contained in each receipt. Each word is stored as a separate row, preceded by the coordinates of its location on the image.
-(labels file can be generated with an OCR engine. An example is shown in [tess_ocr.py](src/pipeline/tess_ocr.py)
-- The labels file does not contain word level bounding boxes. It consists of inconsistent bounding criteria. Knowing that, I have still used the file as it was more convenient for me. A word level OCR as mentioned above would yield in a better performance.
+(labels file can be generated with an OCR engine. An example is shown in [tess_ocr.py](src/pipeline/tess_ocr.py)<br>
+_The labels file does not contain word level bounding boxes. It consists of inconsistent bounding criteria. Knowing that, I have still used the file as it was more convenient for me. A word level OCR as mentioned above would yield in a better performance._
 
 ### 2. Labeling
 - Additionally, I manually labeled each image with ground truths containing the following labels: company, adddress, invoice, date, total
 
-
-
 ### 3. Graph Modeling
-
-
-
 <p align="left">
 <img src="figures/figure_5.png" width = 1000>
 </p>
@@ -299,17 +283,16 @@ The best test results were:
 epoch: 981, train_loss:0.1455, val_loss:0.7506, Train: 0.9324, Val: 0.8600, Test: 0.8713
 
 ```
+| Classes | Accuracy |
+| --------| ------------- |
+| Company | 98.5  | 
+| Address | 86.5 | 
+| Invoice | 54.8  | 
+| Date | 53.9 |
+| Total | 34.9 |
+| Undefined | 86.1 |
 
 
-Classes Accuracy:
-```
-Company  : 98.5
-Address  : 86.5 
-Invoic   : 54.8
-Date     : 53.9 
-Total    : 34.9
-Undefined : 86.1
-```
 __There is a spillage of 'total' into undefined due to obscurity later discussed in the conclusion__ 
 
 ### Confusion Matrix for testing in epoch 521:
@@ -363,19 +346,11 @@ for a better one, consider each single word from Tesseract and label them which 
     │
     ├── notebooks          <- Jupyter notebooks. 
     │
-    │
-    ├── reports            <- Generated graphics and figures to be used in reporting
-    │   
-    │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment
-    │
     ├── src                <- Source code for use in this project.
     │   │ 
-    │   │
     │   ├── data           <- Script to format data from 'external' to 'raw'
     │   │   └── make_dataset.py
     │   │   
-    │   │
     │   ├── models         <- Scripts to train,validate and test the GCN model 
     │   │   └── final_model.py
     │   │   
