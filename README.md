@@ -1,4 +1,4 @@
-Information Extraction of Semi-Structured Documents.
+Information Extraction from Semi-Structured Documents.
 ==============================
 A scalable and robust method of extracting relevant information from semi-structured documents(invoices, reciepts, ID cards, licenses etc) with transductive learning by leveraging Graph Convolutional Networks(GCNs). This project can be scaled to any semi-structured document for auto-labeling through machine learning. 
 
