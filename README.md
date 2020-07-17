@@ -62,7 +62,7 @@ The main issue/concern with this approach is that invoices do not follow a unive
 What if we could have some labeled data, and use a transductive learning method where a model could predict the labels for the rest of the data? This approach would be highly scalable and convenient for a lot of problems pertaining to the domain.
 
 Semi-Supervised Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__ :. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
-[An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) provides for the conceptual background for this project. Top level concepts are derived from the paper and I would like to thank the authors for their contribution. 
+[An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) provides for the conceptual background for this project. I have relied on graph formation concepts from the paper but the code itself is my own.
 
 # Why Graphs?
 Graphs provide a robust data structure to approach the problem which can be used for transductive learning.
@@ -333,7 +333,7 @@ for a better one, consider each single word from Tesseract and label them which 
     │   ├── processed      <- Final data in format torch geometric format for modelling.
     │   └── raw            <- raw data for this project (cleaned filenames)
     │
-    ├── notebooks          <- Jupyter notebooks. 
+    ├── notebooks          <- Jupyter notebooks (will be added if need be). 
     │
     ├── src                <- Source code for use in this project.
     │   │ 
@@ -356,15 +356,16 @@ for a better one, consider each single word from Tesseract and label them which 
 --------
 
 References:<br>
-[Graph Neural Networks:
+- [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) 
+- [Graph Neural Networks:
 A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf )
+- [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/pdf/1609.02907.pdf)
+- [A Tale of Two Convolutions: Differing Design Paradigms for Graph Neural Networks](https://towardsdatascience.com/a-tale-of-two-convolutions-differing-design-paradigms-for-graph-neural-networks-8dadffa5b4b0)<br>
+- [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf)<br>
+- [Fourier Transform](https://www.math.ucla.edu/~tao/preprints/fourier.pdf)<br>
+- [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/pdf/1606.09375.pdf)<br>
 
-https://arxiv.org/pdf/1609.02907.pdf<br>
-https://towardsdatascience.com/a-tale-of-two-convolutions-differing-design-paradigms-for-graph-neural-networks-8dadffa5b4b0<br>
-https://arxiv.org/pdf/1812.08434.pdf<br>
-https://www.math.ucla.edu/~tao/preprints/fourier.pdf<br>
-<br>
-https://arxiv.org/pdf/1606.09375.pdf
+
 
 
 
