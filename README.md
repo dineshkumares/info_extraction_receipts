@@ -339,7 +339,8 @@ for a better one, consider each single word from Tesseract and label them which 
     │   └── raw            <- raw data for this project (cleaned filenames)
     │
     ├── notebooks          
-    │   └── make_dataset.py <- graph formation in jupyter notebook format
+    │   └── grapher.ipynb <- graph formation in jupyter notebook format(not inclusive of all graph operations)
+    │ 
     ├── src                 <- Source code for use in this project.
     │   │ 
     │   ├── data           <- Script to format data from 'external' to 'raw'
