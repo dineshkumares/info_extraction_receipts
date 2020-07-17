@@ -13,18 +13,22 @@ A scalable and robust method of extracting relevant information from semi-struct
 Table of Contents:
 --------
 
-- [Introduction](#Introduction)
+- [Introduction](#introduction)
+    - [Solution](#solution)
 - [Why Graphs?](#why-graphs)
 - [Graph Convolutional Networks (GCNs)](#graph-convolutional-networks-gcns)
-- [Steps of the Project](#Steps%20of%20the%20Project)
-  + [Data Collection](#1.%20Data%20Collection)
-  + [Labeling](#2.%20Labeling)
-  + [Graph Modeling](#3.%20Graph%20Modeling)
-  + [Features Engineering](#4.%20Features%20Engineering)
-  + [GCN Modeling](#5.%20GCN%20modeling)
-- [Conclusion](#Conclusion)
-- [Code Navigation](#Project%20Organization)
-- [References](#References)
+  - [Main Paper: ](#main-paper-)
+- [Steps of the Project:](#steps-of-the-project)
+    - [1. Data Collection](#1-data-collection)
+    - [2. Labeling](#2-labeling)
+    - [3. Graph Modeling](#3-graph-modeling)
+    - [4. Features Engineering](#4-features-engineering)
+    - [5. GCN modeling](#5-gcn-modeling)
+    - [Confusion Matrix for test data in epoch 521:](#confusion-matrix-for-test-data-in-epoch-521)
+- [Conclusion](#conclusion)
+- [Project Organization](#project-organization)
+- [References:](#references)
+
 
 
 # Introduction:
