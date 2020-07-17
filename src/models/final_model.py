@@ -1,47 +1,31 @@
 import os.path as osp
 import argparse
 import numpy as np 
-
 import torch
 import torch.nn.functional as F
-
 import torch_geometric.transforms as T
 from torch_geometric.nn import GCNConv, ChebConv  # noqa
-
 from torch.nn import Parameter
-
 from sklearn.utils import class_weight
 from sklearn.metrics import confusion_matrix
 
 
-#dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
-#data = dataset[0]
-
 data_path = "../../data/processed/" + "data2.dataset"
-#data_path = "../../data/processed/" + "data_withtexts.dataset"
+
 data = torch.load(data_path)
 
 print(f'training nodes: {data.y[data.train_mask].shape}')
 print(f'validation nodes: {data.y[data.val_mask].shape}')
 print(f'testing nodes: {data.y[data.test_mask].shape}')
 
+# print(data.y.unique())
+# print(data.y.shape)
+# print(data.y[data.train_mask].shape)
+# print(data.y.unique())
+# print(data.y)
 
-
-print(data.y.unique())
-
-print(data.y.shape)
-
-
-print(data.y[data.train_mask].shape)
-
-
-print(data.y.unique())
-print(data.y)
-
-
-
-
-parser = argparse.ArgumentParser()
+# unique_elements, counts_elements = np.unique(data.y, return_counts=True)
+# print(np.asarray((unique_elements, counts_elements)))
 
 # Training settings
 parser = argparse.ArgumentParser()
@@ -53,11 +37,9 @@ parser.add_argument('--epochs', type=int, default=1000,
 parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
 parser.add_argument('--verbose', type=int, default=0,
-                    help='print details of the model')
+                    help='print confusion matrix')
 parser.add_argument('--weight_decay', type=float, default=5e-4,
                     help='Weight decay (L2 loss on parameters).')
-parser.add_argument('--dropout', type=float, default=0.5,
-                    help='Dropout rate (1 - keep probability).')
 parser.add_argument('--early_stopping', type=int, default = 50,
                     help = 'Stopping criteria for validation')
 
@@ -71,19 +53,12 @@ args = parser.parse_args()
 print(f'number of nodes: {data.x.shape}')
 
 
-#cached = True is for transductive learning
+
 class Net(torch.nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        # self.conv1 = GCNConv(data.x.shape[1], 16, cached=True, \
-        #      normalize=not args.use_gdc)
-        # self.conv2 = GCNConv(16, 32, cached=True,\
-        #      normalize=not args.use_gdc)        
-        # self.conv3 = GCNConv(32, 64, cached=True, \
-        #      normalize=not args.use_gdc)        
-        # self.conv4 = GCNConv(64, 6, cached=True, \
-        #      normalize=not args.use_gdc)  
         if args.model == 'GCN':
+            #cached = True is for transductive learning
             self.conv1 = GCNConv(data.x.shape[1], 16, cached=True)
             self.conv2 = GCNConv(16, 32, cached=True)  
             self.conv3 = GCNConv(32, 64, cached=True) 
@@ -148,40 +123,26 @@ def test():
     for mask_name, mask in data('train_mask', 'val_mask', 'test_mask'):
         pred = logits[mask].max(1)[1]
 
-
         acc = pred.eq(data.y[mask]-1).sum().item() / mask.sum().item()  
 
-
-        # print(mask_name)
-        # print(pred)
-        # print(f'unique predictions: {pred.unique()}')
-        # print(data.y[mask]-1)
-        # print('correct predicted :  ', pred.eq(data.y[mask]-1).sum().item())
-        # print('total items: ' , mask.sum().item())
-
-        # print(f'{mask_name} accuracy is {acc}')
-
-
-
         if args.verbose == 1:
-            r"printing predicted classes and number of elements for preds"
-            print('pred')
-            unique_elements, counts_elements = np.unique(pred, return_counts=True)
-            print(np.asarray((unique_elements, counts_elements)))
+            # r"printing predicted classes and number of elements for preds"
+            # print('pred')
+            # unique_elements, counts_elements = np.unique(pred, return_counts=True)
+            # print(np.asarray((unique_elements, counts_elements)))
 
+            # r"printing predicted classes and number of elements for actual"
+            # print('actual')
+            # unique_elements, counts_elements = np.unique((data.y[mask]-1), return_counts=True)
+            # print(np.asarray((unique_elements, counts_elements)))
+ 
 
-            r"printing predicted classes and number of elements for actual"
-            print('actual')
-            unique_elements, counts_elements = np.unique((data.y[mask]-1), return_counts=True)
-            print(np.asarray((unique_elements, counts_elements)))
-
-
-
-            conf_mat=confusion_matrix((data.y[mask]-1).numpy(), pred.numpy())
-        # Per-class accuracy
-            print(f'confusion_matrix   is   {conf_mat}')
-            class_accuracy=100*conf_mat.diagonal()/conf_mat.sum(1)
-            print(class_accuracy)
+        #confusion matrix
+            if mask_name == 'test_mask':
+                conf_mat=confusion_matrix((data.y[mask]-1).numpy(), pred.numpy())
+                print(f'confusion_matrix: \n   {conf_mat}')
+                class_accuracy=100*conf_mat.diagonal()/conf_mat.sum(1)
+                print(class_accuracy)
 
        # print(acc)
         accs.append(acc)
@@ -194,7 +155,7 @@ if __name__ == '__main__':
     counter = 0
 
 
-    for epoch in range(1, args.epochs):
+    for epoch in range(1, args.epochs+1):
         
 
         loss = train()

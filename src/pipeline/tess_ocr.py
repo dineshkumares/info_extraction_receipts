@@ -4,30 +4,27 @@ from pytesseract import Output
 import numpy as np
 import pandas as pd 
 
-# Need to get 
-# (word id, content and bounding box)
+
+
+
+"""
+Note: This is an example for how to create a dataframe with bounding boxes for a document. It is for demonstration purposes. 
+For this project, 'ready-made' bounding box is used that is found in 'data/raw/box'.
+
+"""
+
 
 image = "../../data/raw/img/339.jpg"
-#image = "/Users/udipbohara/Desktop/Datascience_projects/info_extraction_receipts/src/pipeline/test_custom.jpg"
-
-
 output = "../../figures/tess_339.jpg"
-
-
 img = cv2.imread(image)
 
-
-
-custom_config = r'--oem 3 --psm 6'
-text = pytesseract.image_to_string(img, config=custom_config)
-print(text)
 
 custom_config = r'--oem 3 --psm 6'
 
 d = pytesseract.image_to_data(img, output_type=Output.DICT) #, config=custom_config)
 print(d.keys())
 
-#draw boxes 
+
 
 """
 
@@ -64,7 +61,7 @@ for i in range(n_boxes):
         xmax.append(x + w)
         ymax.append(y + h) 
         Object.append(text)
-        #print(img_height, img_width)
+
 
 
 df['xmin'], df['ymin'], df['xmax'], df['ymax'], df['Object']  = xmin,ymin,xmax,ymax,Object 
@@ -76,12 +73,6 @@ print(df)
 cv2.imwrite('test550_scratchpart2' + '.jpg', img)
 
 cv2.imwrite(output, img)
-
-# df.to_csv('test_custom' + '.csv' ,index = False)
-# cv2.imwrite('test_custom' + '.jpg', img)
-
-#df.to_csv('../../data/raw/box/test_tess_000' + '.csv' ,index = False)
-#cv2.imwrite('../../data/raw/img/test_tess_000' + '.jpg', img)
 
 cv2.imshow('img', img)
 cv2.waitKey(0)

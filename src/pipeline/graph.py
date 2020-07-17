@@ -5,13 +5,7 @@ import os
 import matplotlib.pyplot as plt 
 import math 
 import itertools
-
 import networkx as nx
-
-
-from flair.embeddings import BytePairEmbeddings
-from flair.data import Sentence
-
 
 class Grapher:
     """
@@ -215,15 +209,12 @@ class Grapher:
         for _,group in grouped:
             a = group['index'].tolist()
             b = group['index'].tolist()
-            #b.reverse()
-            #a = 0,1,2
-            #2
+
             horizontal_connection = {a[i]:a[i+1] for i in range(len(a)-1) }
 
             #storing directional connections
             right_dict_temp = {a[i]:{'right':a[i+1]} for i in range(len(a)-1) }
             left_dict_temp = {b[i+1]:{'left':b[i]} for i in range(len(b)-1) }
-
 
             #add the indices in the dataframes
             for i in range(len(a)-1):
@@ -237,24 +228,19 @@ class Grapher:
 
         dic1,dic2 = left_connections, right_connections
         
-    
-        
         #verticle connections formation
         bottom_connections = {}
         top_connections = {}
 
         for idx, row in df.iterrows():
             if idx not in bottom_connections.keys():
-    
                 right_a = row['xmax']
                 left_a = row['xmin']
 
                 for idx_2, row_2 in df.iterrows():
-
                     #check for higher idx values 
-                
+
                     if idx_2 not in bottom_connections.values() and idx < idx_2:
-                        #if idx_2 not in bottom_connections.values() and (idx != idx_2):
                             right_b = row_2['xmax']
                             left_b = row_2['xmin'] 
                             if (left_b <= right_a) and (right_b >= left_a): 
@@ -288,9 +274,6 @@ class Grapher:
 
             if not os.path.exists('../../figures/graphs'):
                 os.makedirs('../../figures/graphs')			
-
-            
-           
            
             plot_path ='../../figures/graphs/' + self.filename + 'plain_graph' '.jpg'
             print(plot_path)
@@ -314,6 +297,12 @@ class Grapher:
     #dict_graph, graph, processed_df = grapher(df, export_graph=True) #, show=True)
 
     def get_text_features(self, df): 
+        """
+        gets text features 
+
+        Args: df
+        Returns: n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special
+        """
         data = df['Object'].tolist()
         
         '''
@@ -332,11 +321,8 @@ class Grapher:
         n_lower, n_upper, n_spaces, n_alpha, n_numeric,n_special = [],[],[],[],[],[]
 
         for words in data:
-            upper,lower,alpha,spaces,numeric,special = 0,0,0,0,0,0
+            upper,alpha,spaces,numeric,special = 0,0,0,0,0,0
             for char in words: 
-        
-                # for lower letters 
-        
                 # for upper letters 
                 if char.isupper(): 
                     upper += 1
@@ -515,11 +501,6 @@ class Grapher:
         self.get_text_features(df)
 
         return df
-
-
-    # df, plot_df = relative_distance(processed_df)
-    # print(plot_df)
-
 
 if __name__ == "__main__":
     file = '339'

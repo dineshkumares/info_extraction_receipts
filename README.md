@@ -7,7 +7,7 @@ A scalable and robust method of extracting relevant information from semi-struct
 </p>
 
 <p align="center">
-<i>Figure: Extraction of information from a document</i>
+<i>Figure 1: Extraction of information from a document</i>
 </p>
 
 Table of Contents:
@@ -24,6 +24,7 @@ Table of Contents:
   + [GCN Modeling](#5.%20GCN%20modeling)
 - [Conclusion](#Conclusion)
 - [Code Navigation](#Project%20Organization)
+- [References](#References:)
 
 
 # Introduction:
@@ -44,7 +45,7 @@ The basic steps involved in Information Extraction are:
 </p>
 
 <p align="center">
-<i> Figure: An example of using an OCR engine: Tesseract for text extraction.</i>
+<i> Figure 2: An example of using an OCR engine: Tesseract for text extraction.</i>
 </p>
 
 The main issue/concern with this approach is that invoices do not follow a universal pattern. Utilities such as regex could be used to extract information based on pattern but it is not a scalable solution. As the data size increases, there is the need to deal with different patterns of documents which would break a brute-force searching algorithm.
@@ -54,7 +55,7 @@ The main issue/concern with this approach is that invoices do not follow a unive
 </p>
 
 <p align="center">
-<i> Figure 1: Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE) </i>
+<i> Figure 3: Different patterns of semi structured documents make it difficult to generalize an algorithm for Information Extraction(IE) </i>
 </p>
 
 ### Solution:
@@ -78,7 +79,7 @@ This can be easily understood by the following visual example:
 </p>
 
 <p align="center">
-<i> Figure: Visual Illustration of how a graph can be represented in matrices.</i>
+<i> Figure 4: Visual Illustration of how a graph can be represented in matrices.</i>
 </p>
 
 # Graph Convolutional Networks (GCNs)
@@ -162,7 +163,7 @@ _The labels file does not contain word level bounding boxes. It consists of inco
 <img src="figures/figure_5.png" width = 1000>
 </p>
 
-_Figure: The graph modeling which results in transforming the document to a digestable graph format for the Graph Convolutional Network algorithm_ 
+_Figure 5: The graph modeling which results in transforming the document to a digestable graph format for the Graph Convolutional Network algorithm_ 
 
 Graph Modeling is the most essential part of the project. There needs to be a robust and consistent method of modeling the invoices into graphs regardless of their structure/pattern. Ensuring a universal rule towards modeling the graph is an integral part of being able to form consistent graphs which will be used in graph learning. 
 
@@ -173,7 +174,7 @@ For this project, The following structure is followed. Each word/object consists
 </p>
 
 
-_Figure: Graph modeling system explained in this paper: [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12)_ 
+_Figure 6: Graph modeling system explained in this paper: [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12)_ 
 
 The graph modeling process includes the following steps:
 - Line formation:
@@ -204,13 +205,15 @@ going line by line from left to right and at last the final bottom right word of
 <img src="figures/figure_4.png" width = 1000>
 </p>
 
-_Figure: Breakdown of the intermediate steps bounding boxes, labeling and graph modeling_
+_Figure 7: Breakdown of the intermediate steps bounding boxes, labeling and graph modeling_
 
 These set of rules are scalable and work for more complex structures:
 
 <p align="left">
 <img src="figures/figure_7.png" width = 1000>
 </p>
+
+_Figure 8: Demonstration of how the set of parameters can be generalized for more complex document structures_
 
 ### 4. Features Engineering
 Node features consisted of the following:
@@ -228,10 +231,22 @@ The train, validation and test sets included:
 - Due to the imbalanced dataset, class weights were added to ensure proper learning of weights during backpropagation of the loss. 
 - The negative log likelihood loss [NLLLoss function](https://pytorch.org/docs/master/generated/torch.nn.NLLLoss.html) was used with the following weights:
 
-Following were the weights used to handle the imbalance in the dataset.
+Following were the weights used to handle the imbalance in the dataset. (as undefined is more)
+
 ```
+Class number distribution in the dataset:
+company: 687
+address: 1677
+invoice: 598
+date: 624
+total: 626
+undefined: 29414
+
+Weights used to balance class disribution for NLLloss propagation:
 {'company': 8.1577, 'address':3.3419, 'invoice':9.3718, 'date':8.9813, 'total':8.9526, 'undefined':0.1905}
+ 
 ```
+
 
  3 hidden GCN layers were stacked, the first layer learns 16 different filters (16 different graph connection patterns), and the second layer learn 32 filters, learning to recognize 32 combinations of the 16 patterns learned in layer 1. This hierarchical compositionality property, also found in CNN’s, gives the model the power to generalize to unseen layouts.
 
@@ -255,7 +270,7 @@ training nodes: 26947, valdiation nodes: 3221, testing nodes: 3458
 </p>
 
 <p align="center">
-<i><b>Abbreviated Steps of GCN:</b> https://github.com/tkipf/gcn</i>
+<i><b>Figure 9: Abbreviated Steps of GCN:</b> https://github.com/tkipf/gcn</i>
 </p>
 
 
@@ -284,7 +299,7 @@ epoch: 981, train_loss:0.1455, val_loss:0.7506, Train: 0.9324, Val: 0.8600, Test
 
 __There is a spillage of 'total' into undefined due to obscurity later discussed in the conclusion__ 
 
-### Confusion Matrix for testing in epoch 521:
+### Confusion Matrix for test data in epoch 521:
 
 Epoch: 521, train_loss:0.1637, val_loss:0.7775, Train: 0.8614, Val: 0.7970, Test: 0.8039
 
@@ -321,7 +336,7 @@ for a better one, consider each single word from Tesseract and label them which 
 <img src="figures/figure_8.png">
 
 <p align="center">
-<i>Figure: Inconsistencies in the provided bounding boxes.</i>
+<i>Figure 10: Inconsistencies in the provided bounding boxes.</i>
 </p>
 
 ## Project Organization
@@ -333,9 +348,9 @@ for a better one, consider each single word from Tesseract and label them which 
     │   ├── processed      <- Final data in format torch geometric format for modelling.
     │   └── raw            <- raw data for this project (cleaned filenames)
     │
-    ├── notebooks          <- Jupyter notebooks (will be added if need be). 
-    │
-    ├── src                <- Source code for use in this project.
+    ├── notebooks          
+    │   └── make_dataset.py <- graph formation in jupyter notebook format
+    ├── src                 <- Source code for use in this project.
     │   │ 
     │   ├── data           <- Script to format data from 'external' to 'raw'
     │   │   └── make_dataset.py
@@ -345,17 +360,21 @@ for a better one, consider each single word from Tesseract and label them which 
     │   │   
     │   └── pipeline
     │       ├── graph.py            <- Construct a graph from raw data. (export figures of graphs)
-    │       ├── graph_to_data.py    <- Convert graph to a Torch Geometric dataset for modeling.
+    │       ├── data_for_GCN.py    <- Convert graph to a Torch Geometric dataset for GCN modeling.
     │       ├── tess_ocr.py         <- Convert any document to image formate
     │       └── visualize.py        <- Visualize/export bounding boxes and labels
     │
-    ├── LICENSE         
+    ├── LICENSE     
     │
-    └── README.md       
+    ├── README.md      
+    │
+    └── requirements.txt    <- modules required to run the files
+
+      
 
 --------
 
-References:<br>
+### References:
 - [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) 
 - [Graph Neural Networks:
 A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf )

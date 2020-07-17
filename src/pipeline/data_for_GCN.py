@@ -7,19 +7,6 @@ import numpy as np
 import os 
 import random
 
-"""
-make dataset for modeling as torch_geometric.data.Data:
-
-- x (Tensor, optional) – Node feature matrix with shape [num_nodes, num_node_features]. (default: None)
-- edge_index (LongTensor, optional) – Graph connectivity in COO format with shape [2, num_edges]. (default: None)
-- edge_attr (Tensor, optional) – Edge feature matrix with shape [num_edges, num_edge_features]. (default: None)
-- y (Tensor, optional) – Graph or node targets with arbitrary shape. (default: None)
-- pos (Tensor, optional) – Node position matrix with shape [num_nodes, num_dimensions]. (default: None)
-- norm (Tensor, optional) – Normal vector matrix with shape [num_nodes, num_dimensions]. (default: None)
-- face (LongTensor, optional) – Face adjacency matrix with shape [3, num_faces]. (default: None)
-
-"""
-
 def from_networkx(G):
     """Converts a :obj:`networkx.Graph` or :obj:`networkx.DiGraph` to a
     :class:`torch_geometric.data.Data` instance.
@@ -56,7 +43,12 @@ def from_networkx(G):
 
 def get_data():
     """
-    returns data into a pygeometric Batch dataset format
+    returns one big graph with unconnected graphs with the following:
+    - x (Tensor, optional) – Node feature matrix with shape [num_nodes, num_node_features]. (default: None)
+    - edge_index (LongTensor, optional) – Graph connectivity in COO format with shape [2, num_edges]. (default: None)
+    - edge_attr (Tensor, optional) – Edge feature matrix with shape [num_edges, num_edge_features]. (default: None)
+    - y (Tensor, optional) – Graph or node targets with arbitrary shape. (default: None)
+    - validation mask, training mask and testing mask 
     """
     path = "../../data/raw/box/"
     l=os.listdir(path)
@@ -136,14 +128,11 @@ def get_data():
     
 
     data = torch_geometric.data.Batch.from_data_list(list_of_graphs)
-    
-
     data.edge_attr = None 
 
     save_path = "../../data/processed/"  
     torch.save(data, save_path +'data_withtexts.dataset')
     print('Data is saved!')
-
 
 if __name__ == "__main__":
     get_data()

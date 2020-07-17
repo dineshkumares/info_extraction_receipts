@@ -1,0 +1,9 @@
+numpy
+pandas
+matplotlib
+torch
+networkx
+sklearn
+pytesseract
+cv2
+torch_geometric
