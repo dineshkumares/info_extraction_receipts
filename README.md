@@ -23,18 +23,18 @@ Table of Contents:
   + [Features Engineering](#4.%20Features%20Engineering)
   + [GCN Modeling](#5.%20GCN%20modeling)
 - [Conclusion](#Conclusion)
-- [Code Organization](#Project%20Organization)
+- [Code Navigation](#Project%20Organization)
 
 
 # Introduction:
-Automated Information extraction is the process of extracting structured information from unstructured/semi structured documents. This project focuses on semi-structured documents. Semi-structured documents are documents such as invoices or purchase orders that do not follow a strict format the way structured forms do, and are not bound to specified data fields. 
-Automated Information Extraction holds a lot of potential in the industry. As labeling data can be a very tedious job, using a machine learning techniuqe can improve efficacy and preserve work hours or the need to employ third party sources for labeling. 
+Automated Information extraction is the process of extracting structured information from unstructured/semi structured documents. This project focuses on semi-structured documents which are documents such as invoices or purchase orders that do not follow a strict format the way structured forms do, and are not bound to specified data fields. 
+Automated Information Extraction holds a lot of potential in the industry. As labeling data can be a very tedious job, using a machine learning techniuqes can improve efficacy and preserve work hours or the need to employ third party sources for labeling. 
 
-To name a couple of applications:
+This project supplements the process of the following tasks:
 - Automatically scan images of invoices (bills) to extract valuable information.
 - Build an automated system to automatically store revelant information from an invoice: eg: company name, address, date, invoice number, total  
 
-In order to be able to do this, here are the basic steps:
+The basic steps involved in Information Extraction are:
 - Gather raw data (invoice images)
 - Optical character recognition (OCR) engine such as [Tesseract](https://tesseract-ocr.github.io) or [Google Vision](https://cloud.google.com/vision/docs/ocr). This process is very simple and straightforward as shown in [tess_ocr.py](src/pipeline/tess_ocr.py)
 - Extract relevant/salient information in a digestable format such as json for storage/analytics.
@@ -58,6 +58,7 @@ The main issue/concern with this approach is that invoices do not follow a unive
 </p>
 
 ### Solution:
+-----------
 What if we could have some labeled data, and use a transductive learning method where a model could predict the labels for the rest of the data? This approach would be highly scalable and convenient for a lot of problems pertaining to the domain.
 
 Semi-Supervised Graph Convolutional Networks (GCNs) provide a platform for recognizing different patterns associated with different invoices/semi-structured documents. This method can be used in __Transductive learning/semi-supervised learning__ :. This can be used in auto-labeling/classification of desired classes(in our case: company, address, invoice, date and total) by learning graph patterns. 
@@ -85,42 +86,33 @@ This can be easily understood by the following visual example:
 Graph Neural Networks is a subset of deep learning with a good amount of research done in it. [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf). This [medium article](https://towardsdatascience.com/graph-convolutional-networks-for-geometric-deep-learning-1faf17dee008) provides excellent introduction to Graph Neural Networks.
 
 
-Why are GCNs called convolutions?
+__Why are GCNs called convolutions?__
 
-The aggregation over the neighborhood of a node in the network is analogue to a pooling operation in a convolutional neural network and the multiplication with the weight matrix W is analogue to a filtering operation. Although these operations are similar — hence the similarity in names between GCNs and CNNs — they are not the same.
+The aggregation over the neighborhood of a node in the network is analogous to a pooling operation in a convolutional neural network and the multiplication with the weight matrix W is analogous to a filtering operation. These operations are conceptually similar — hence the similarity in names between GCNs and CNNs.
 
-
-Why Conventional Convolutional Neural Network methods dont work:
+Why Conventional Convolutional Neural Network methods dont work for graphs:
 - There is no Euclidean distance in graphs.
-- Graphs have a certain number of nodes. 
 - There is no notion of direction in graphs.
 
-For the sake of conciseness, here are the basic steps that involve Graph Spectral Convolution in a highly simplified manner:
+To solve the lack of solution to the problem that traditional CNNs provide, Graph Spectral Convolutions come in handy. For the sake of conciseness, here are the basic steps that involve Graph Spectral Convolution in a highly simplified manner:
 - Transform the graph into the spectral domain using eigendecomposition
 - Apply eigendecomposition to the specified kernel
 - Multiply the spectral graph and spectral kernel (like vanilla convolutions)
-- Return results in the original spatial domain (analogous to inverse GFT)
+- Return results in the original spatial domain (analogous to inverse Graph Fourier Transform)
 
-
-Steps behind this:
+From basic concepts from how graphs can be represented as matrices, Steps behind this:
 - Calculate the Ajacent/weight matrix and Diagonal matrix for a graph
 - Calculate the Laplacian matrix ( D- A) (give a sense of euclidean space)
 - Calculate the eigenvectors of the Laplacian matrix (Spectral domain)
 - You end up with a Fourier basis for the graph. 
 - _Project both weights and data into that basis (results in a convolution)_
 
-It’s possible to transform both your data and your filters such that each filter is represented by a simple diagonalized matrix (all zeroes, except for values along the diagonal), that gets multiplied against a transformed version of the data. This simplification happens when you perform a Fourier Transform of your data. Fourier transforms are typically thought of in the context of functions, and (on a very high level), they represent any function as a weighted composition of simpler “frequency” functions; starting with low frequencies that explain the broad strokes pattern of the data, and ending with high frequencies that fill in the smaller details.
 
-Principle behind this:
-- Calculate the Ajacent/weight matrix and Diagonal matrix for a graph
-- Calculate the Laplacian matrix ( D- A) (give a sense of euclidean space)
-- Calculate the eigenvectors of the Laplacian matrix (Spectral domain)
-- You end up with a Fourier basis for the graph. 
-- Project both weights and data into that basis (results in a convolution)
+_In more technical terms: It’s possible to transform both our data and filters such that each filter is represented by a simple diagonalized matrix (all zeroes, except for values along the diagonal), that gets multiplied against a transformed version of the data. This simplification happens when you perform a Fourier Transform of your data. Fourier transforms are typically thought of in the context of functions, and (on a very high level), they represent any function as a weighted composition of simpler “frequency” functions; starting with low frequencies that explain the broad strokes pattern of the data, and ending with high frequencies that fill in the smaller details._
 
- Fourier Transform [video](https://www.youtube.com/watch?v=spUNpyF58BY). Better explanation of that can be found [here](https://www.cs.yale.edu/homes/spielman/561/2009/lect02-09.pdf)
-To build an intution of how it all ties to Fourier Transform, [this](https://www.math.ucla.edu/~tao/preprints/fourier.pdf) is an excellent paper. 
-__Key take-away__: When you calculate the eigenvectors of the Laplacian, you end up with a Fourier basis for the graph
+ Fourier Transform [video](https://www.youtube.com/watch?v=spUNpyF58BY) is a pretty complex mathematical process. Better explanation of that can be found [here](https://www.cs.yale.edu/homes/spielman/561/2009/lect02-09.pdf)
+To build an intution of how it all ties to Fourier Transform, [this](https://www.math.ucla.edu/~tao/preprints/fourier.pdf) is an excellent resource. 
+
 
 
 ## Main Paper: 
@@ -130,7 +122,6 @@ https://arxiv.org/pdf/1609.02907.pdf
 In Kipf and Welling’s Graph Convolutional Network, a convolution is defined by: 
 
 ![g_{\theta {}'} \star x \approx \sum_{k=0}^{K} \theta {}'_{k}T_{k}(\tilde{L})x](https://render.githubusercontent.com/render/math?math=g_%7B%5Ctheta%20%7B%7D'%7D%20%5Cstar%20x%20%5Capprox%20%5Csum_%7Bk%3D0%7D%5E%7BK%7D%20%5Ctheta%20%7B%7D'_%7Bk%7DT_%7Bk%7D(%5Ctilde%7BL%7D)x)
-
 
 Where gθ is a kernel (θ represents the parameters) which is applied (represented by the star) to x, a graph signal. K stands for the number of nodes away from the target node to consider (the Kth order neighborhood, with k being the the closest order neighbor). T denotes the Chebyshev polynomials as applied to L̃ which represents the equation:
 
@@ -142,9 +133,7 @@ Where λ max denotes the largest eigenvalue of L, the normalized graph laplacian
 Chebyshev polynomial
 ------------------------
 
-The kernel equals the sum of all Chebyshev polynomial kernels applied to the diagonal matrix of scaled Laplacian eigenvalues for each order of k up to K-1.
-
-First order simply means that the metric used to determine the similarity between 2 nodes is based on the node’s immediate neighborhood. Second order (and beyond) means the metric used to determine similarity considers a node’s immediate neighborhood, but also the similarities between the neighborhood structures (with each increasing order, the depth of which nodes are considered increases).
+First order of Chebyshev Polynomial simply means that the metric used to determine the similarity between 2 nodes is based on the node’s immediate neighborhood. Second order (and beyond) means the metric used to determine similarity considers a node’s immediate neighborhood, but also the similarities between the neighborhood structures (with each increasing order, the depth of which nodes are considered increases).The kernel equals the sum of all Chebyshev polynomial kernels applied to the diagonal matrix of scaled Laplacian eigenvalues for each order of k up to K-1.
 
 __ChebNets and GCNs are very similar, but their largest difference is in their choices for value K in eqn. 1. In a GCN, the layer wise convolution is limited to K = 1__
 
@@ -206,7 +195,7 @@ The graph modeling process includes the following steps:
 
 The nodes represet each word/object and edges represent the connection with other words based on the above parameters.
 
-_This ensures that words are read from top left corner of the image first, 
+_This ensures that words are aligned from top left corner of the image first, 
 going line by line from left to right and at last the final bottom right word of the page is read._
 
 
