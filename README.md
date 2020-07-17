@@ -286,16 +286,6 @@ early stopping : 50 epochs. (if the validation loss did not decrease for 50 epoc
 The best test results were: 
 epoch: 981, train_loss:0.1455, val_loss:0.7506, Train accuracy: 0.9324, Val accuracy: 0.8600, Test accuracy: 0.8713
 
-```
-| Classes | Accuracy |
-| --------| ------------- |
-| Company | 98.5  | 
-| Address | 86.5 | 
-| Invoice | 54.8  | 
-| Date | 53.9 |
-| Total | 34.9 |
-| Undefined | 86.1 |
-
 __There is a spillage of 'total' into undefined due to obscurity later discussed in the conclusion__ 
 
 ### Confusion Matrix for test data in epoch 521:
@@ -326,7 +316,7 @@ Total : 20<br>
 20<br>
 Total Inc Taxes : 20 <br>
 
-Similar issues were for Invoice and date. 
+Similar issues were present for Invoice and date. 
 
 Using a word level approach would lead to a better performance as it would negate the inconsistencies of the bounding boxes  provided in the dataset
 for a better one, consider each single word from Tesseract and label them which would yield a better model.
