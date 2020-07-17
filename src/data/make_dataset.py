@@ -21,7 +21,7 @@ csv_files = [f for f in raw_task1_files if f.name.endswith("txt")]
 
 
 for i, (f_jpg, f_csv) in enumerate(zip(jpg_files, csv_files)):
-    if noext(f_jpg) != noext(f_csv) or noext(f_csv) != noext(f_json):
+    if noext(f_jpg) != noext(f_csv) or noext(f_csv):
         raise ValueError("Raw data filenames mismatch")
 
     print(f"{i:03d}", f_jpg, f_csv)
