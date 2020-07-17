@@ -87,7 +87,7 @@ This can be easily understood by the following visual example:
 Graph Neural Networks is a subset of deep learning with a good amount of research done in it. [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf). This [medium article](https://towardsdatascience.com/graph-convolutional-networks-for-geometric-deep-learning-1faf17dee008) provides excellent introduction to Graph Neural Networks.
 
 
-__Why are GCNs called convolutions?__
+_Why are GCNs called convolutions?_
 
 The aggregation over the neighborhood of a node in the network is analogous to a pooling operation in a convolutional neural network and the multiplication with the weight matrix W is analogous to a filtering operation. These operations are conceptually similar — hence the similarity in names between GCNs and CNNs.
 
@@ -167,7 +167,7 @@ _Figure 5: The graph modeling which results in transforming the document to a di
 
 Graph Modeling is the most essential part of the project. There needs to be a robust and consistent method of modeling the invoices into graphs regardless of their structure/pattern. Ensuring a universal rule towards modeling the graph is an integral part of being able to form consistent graphs which will be used in graph learning. 
 
-For this project, The following structure is followed. Each word/object consists of only one neighbor in each direction with a maximum of four total edges/connections. This is strictly enforced to maintain robustness. __THe rules below ensure proper and consistent formation for any semi-structure document system for data beyond this project.__ 
+For this project, The following structure is followed. Each word/object consists of only one neighbor in each direction with a maximum of four total edges/connections. This is strictly enforced to maintain robustness. _The rules below ensure proper and consistent formation for any semi-structure document system for data beyond this project._
 
 <p align="left">
 <img src="figures/figure_6.png" width = 500>
@@ -303,7 +303,6 @@ __There is a spillage of 'total' into undefined due to obscurity later discussed
 
 Epoch: 521, train_loss:0.1637, val_loss:0.7775, Train: 0.8614, Val: 0.7970, Test: 0.8039
 
-
 | Classes | Company  | Address | Invoice | Date | Total | Undefined |
 | --------| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
 | Company | 66  | 1  | 0  | 0  | 0 | 0  |
@@ -320,7 +319,7 @@ Epoch: 521, train_loss:0.1637, val_loss:0.7775, Train: 0.8614, Val: 0.7970, Test
 ## Conclusion
 
 The biggest issue with my approach as I have mentioned above, is that there is inconsistencies in the bounding boxes for the texts provided in the raw dataset. Due to this, manual annontation was difficult as some objects would have double meanings.
-For example: 'total amount' was difficult to have a consistent pattern as some bounding boxes consisted of currency letters too. Also, some totals were inclusive of the taxes whereas others did not have the option around it. Basically, there were many 'totals' in the invoice with inconsistencies.
+For example: 'total amount' was difficult to have a consistent pattern as some bounding boxes consisted of currency letters too. Also, some totals were inclusive of the taxes whereas others did not have the option around it. Basically, there were many 'totals' in the invoices with inconsistencies. Also some labels consisted of multiple words in them adding to the ambiguity.
 This caused erroneous learning as graph patterns are very dependent on having a consistent frame of reference.
 
 For example:<br>
@@ -376,13 +375,12 @@ for a better one, consider each single word from Tesseract and label them which 
 
 ### References:
 - [An Invoice Reading System Using a Graph Convolutional Network](https://link.springer.com/chapter/10.1007/978-3-030-21074-8_12) 
-- [Graph Neural Networks:
-A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf )
+- [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf )
 - [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/pdf/1609.02907.pdf)
-- [A Tale of Two Convolutions: Differing Design Paradigms for Graph Neural Networks](https://towardsdatascience.com/a-tale-of-two-convolutions-differing-design-paradigms-for-graph-neural-networks-8dadffa5b4b0)<br>
-- [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf)<br>
-- [Fourier Transform](https://www.math.ucla.edu/~tao/preprints/fourier.pdf)<br>
-- [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/pdf/1606.09375.pdf)<br>
+- [A Tale of Two Convolutions: Differing Design Paradigms for Graph Neural Networks](https://towardsdatascience.com/a-tale-of-two-convolutions-differing-design-paradigms-for-graph-neural-networks-8dadffa5b4b0)
+- [Graph Neural Networks: A Review of Methods and Applications](https://arxiv.org/pdf/1812.08434.pdf)
+- [Fourier Transform](https://www.math.ucla.edu/~tao/preprints/fourier.pdf)
+- [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/pdf/1606.09375.pdf)
 
 
 
