@@ -14,8 +14,8 @@ Table of Contents:
 --------
 
 - [Introduction](#Introduction)
-- [Why Graphs?](#Why%20Graphs?)
-- [Graph Convolutional Networks (GCNs)](#Graph%20Convolutional%20Networks%20(GCNs))
+- [Why Graphs?](#why-graphs)
+- [Graph Convolutional Networks (GCNs)](#graph-convolutional-networks-gcns)
 - [Steps of the Project](#Steps%20of%20the%20Project)
   + [Data Collection](#1.%20Data%20Collection)
   + [Labeling](#2.%20Labeling)
@@ -24,7 +24,7 @@ Table of Contents:
   + [GCN Modeling](#5.%20GCN%20modeling)
 - [Conclusion](#Conclusion)
 - [Code Navigation](#Project%20Organization)
-- [References](#References:)
+- [References](#References)
 
 
 # Introduction:
