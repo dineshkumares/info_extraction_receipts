@@ -285,7 +285,7 @@ early stopping : 50 epochs. (if the validation loss did not decrease for 50 epoc
 
 The best test results were: 
 epoch: 981, train_loss:0.1455, val_loss:0.7506, Train accuracy: 0.9324, Val accuracy: 0.8600, Test accuracy: 0.8713
-The model was trained with the following parameters:
+
 ```
 
 __There is a spillage of 'total' into undefined due to obscurity later discussed in the conclusion__ 
