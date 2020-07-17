@@ -23,7 +23,6 @@ Table of Contents:
     - [3. Graph Modeling](#3-graph-modeling)
     - [4. Features Engineering](#4-features-engineering)
     - [5. GCN modeling](#5-gcn-modeling)
-    - [Confusion Matrix for test data in epoch 521:](#confusion-matrix-for-test-data-in-epoch-521)
 - [Conclusion](#conclusion)
 - [Project Organization](#project-organization)
 - [References](#references)
