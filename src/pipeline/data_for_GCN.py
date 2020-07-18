@@ -39,8 +39,6 @@ def from_networkx(G):
     data.num_nodes = G.number_of_nodes()
     return data
 
-
-
 def get_data():
     """
     returns one big graph with unconnected graphs with the following:
@@ -76,7 +74,6 @@ def get_data():
         feature_cols = ['rd_b', 'rd_r', 'rd_t', 'rd_l','line_number',\
                 'n_upper', 'n_alpha', 'n_spaces', 'n_numeric','n_special']
 
-
         features = torch.tensor(df[feature_cols].values.astype(np.float32))
 
         for col in df.columns:
@@ -93,12 +90,8 @@ def get_data():
         df.loc[df['labels'] == 'total', 'num_labels'] = 5
         df.loc[df['labels'] == 'undefined', 'num_labels'] = 6
  
-
         assert df['num_labels'].isnull().values.any() == False, f'labeling error! Invalid label(s) present in {file}.csv'
-
-
         labels = torch.tensor(df['num_labels'].values.astype(np.int))
-
         text = df['Object'].values
 
         individual_data.x = features
@@ -120,13 +113,9 @@ def get_data():
             individual_data.val_mask = torch.tensor([False] * df.shape[0])
             individual_data.test_mask = torch.tensor([True] * df.shape[0])
 
-
-
-
         print(f'{file} ---> Success')
         list_of_graphs.append(individual_data)
     
-
     data = torch_geometric.data.Batch.from_data_list(list_of_graphs)
     data.edge_attr = None 
 

@@ -8,9 +8,7 @@ box_path= "../../data/raw/box/"
 
 labels_path = "../../data/interim/"
 
-
 figures_path = "../../figures/"
-
 
 def visualize_textboxes(img_name, save_img = False):
     """returns invoices images with textboxes"""
