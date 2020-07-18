@@ -280,7 +280,7 @@ epochs: 1000
 learning rate : 0.01
 L2 regularization : 5e-10
 initial filters: 16
-hidden layers : 4 
+hidden layers : 3 
 early stopping : 50 epochs. (if the validation loss did not decrease for 50 epochs)
 
 The best test results were: 
