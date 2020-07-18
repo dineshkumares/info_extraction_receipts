@@ -48,8 +48,6 @@ class Grapher:
             df with words arranged in orientation top to bottom and left to right, the line number for each word, index of the node connected to
             on all directions top, bottom, right and left (if they exist and satisfy the parameters provided)
 
-
-
         _____________________y axis______________________
         |
         |                       top    
@@ -64,13 +62,8 @@ class Grapher:
         iterate through the rows twice to compare them.
         remember that the axes are inverted.
       
-        
         """
-
         df, image = self.df, self.image
-
-
-        
         """
         preprocessing the raw csv files to favorable df 
         """
@@ -98,7 +91,6 @@ class Grapher:
         assert 'ymax' in df.columns, '"ymax" not in object map'
         assert 'Object' in df.columns, '"Object" column not in object map'
 
-
         #remove empty spaces both in front and behind
         for col in df.columns:
             try:
@@ -123,11 +115,9 @@ class Grapher:
             #check to see if idx is in flat_master
             if idx not in flat_master:
                 top_a = row['ymin']
-                bottom_a = row['ymax']
-         
+                bottom_a = row['ymax']         
                 #every line will atleast have the word in it
-                line = [idx]
-            
+                line = [idx]         
                 for idx_2, row_2 in df.iterrows():
                     #check to see if idx_2 is in flat_master removes ambiguity
                     #picks higher cordinate one. 
@@ -140,19 +130,14 @@ class Grapher:
                                 line.append(idx_2)
                 master.append(line)
 
-
         df2 = pd.DataFrame({'words_indices': master, 'line_number':[x for x in range(1,len(master)+1)]})
-
         #explode the list columns eg : [1,2,3]
         df2 = df2.set_index('line_number').words_indices.apply(pd.Series).stack()\
                 .reset_index(level=0).rename(columns={0:'words_indices'})
-
         df2['words_indices'] = df2['words_indices'].astype('int')
-
         #put the line numbers back to the list
         final = df.merge(df2, left_on=df.index, right_on='words_indices')
         final.drop('words_indices', axis=1, inplace=True)
-
 
         """
         3) Sort words in each line based on Left coordinate
@@ -178,7 +163,6 @@ class Grapher:
             incase of ambiguity
             - Draw edges between word and its 4 nearest neighbours if they are available.
 
-
         Args: 
             df after lines properly aligned
             
@@ -190,16 +174,11 @@ class Grapher:
         #horizontal edges formation
         #print(df)
         df.reset_index(inplace=True)
-                
-        
         grouped = df.groupby('line_number')
-        
         #for undirected graph construction
         horizontal_connections = {}
-
         #left
         left_connections = {}    
-
         #right
         right_connections = {}
 
@@ -222,9 +201,8 @@ class Grapher:
             right_connections.update(left_dict_temp)
             horizontal_connections.update(horizontal_connection)
 
-
         dic1,dic2 = left_connections, right_connections
-        
+                
         #verticle connections formation
         bottom_connections = {}
         top_connections = {}
@@ -254,7 +232,6 @@ class Grapher:
                                 #once the condition is met, break the loop to reduce redundant time complexity
                                 break 
                         
-        
         #combining both 
         result = {}
         dic1 = horizontal_connections
@@ -280,19 +257,13 @@ class Grapher:
             plt.savefig(plot_path, format="PNG", dpi=600)
             #plt.show()
 
-
         # connect with the interim file that has labels in it
         df['labels'] = self.df_withlabels['9']
 
         self.df = df 
         return G,result, df 
 
-
-
-    #features calculation
-
-    #dict_graph, graph, processed_df = grapher(df, export_graph=True) #, show=True)
-
+    #features calculation    
     def get_text_features(self, df): 
         """
         gets text features 
@@ -359,31 +330,23 @@ class Grapher:
 
         2) Exports the complete document graph for visualization
 
-
         Args: 
             result dataframe from graph_formation()
              
         returns: 
             dataframe with features and exports document graph if prompted
-
-
         """
 
         df, img = self.df, self.image
-
         image_height, image_width = self.image.shape[0], self.image.shape[1]
-        
         plot_df = df.copy() 
 
-
         for index in df['index'].to_list():
-
             right_index = df.loc[df['index'] == index, 'right'].values[0]
             left_index = df.loc[df['index'] == index, 'left'].values[0]
             bottom_index = df.loc[df['index'] == index, 'bottom'].values[0]
             top_index = df.loc[df['index'] == index, 'top'].values[0]
 
-         
             #check if it is nan value 
             if np.isnan(right_index) == False: 
                 right_word_left = df.loc[df['index'] == right_index, 'xmin'].values[0]
@@ -400,13 +363,8 @@ class Grapher:
                 right_word_y_max = df.loc[df['index'] == right_index, 'ymax'].values[0]
                 right_word_y_min = df.loc[df['index'] == right_index, 'ymin'].values[0]
 
-             
-
-
                 df.loc[df['index'] == index, 'destination_x_hori'] = (right_word_x_max + right_word_left)/2
                 df.loc[df['index'] == index, 'destination_y_hori'] = (right_word_y_max + right_word_y_min)/2
-
-
 
             if np.isnan(left_index) == False:
                 left_word_right = df.loc[df['index'] == left_index, 'xmax'].values[0]
@@ -414,14 +372,11 @@ class Grapher:
 
                 df.loc[df['index'] == index, 'rd_l'] = (left_word_right - source_word_left)/image_width
             
-
-
             if np.isnan(bottom_index) == False:
                 bottom_word_top = df.loc[df['index'] == bottom_index, 'ymin'].values[0]
                 source_word_bottom = df.loc[df['index'] == index, 'ymax'].values[0]
 
                 df.loc[df['index'] == index, 'rd_b'] = (bottom_word_top - source_word_bottom)/image_height
-
 
                 """for plotting purposes"""
                 bottom_word_top_max = df.loc[df['index'] == bottom_index, 'ymax'].values[0]
@@ -430,7 +385,6 @@ class Grapher:
                 df.loc[df['index'] == index, 'destination_y_vert'] = (bottom_word_top_max + bottom_word_top)/2
                 df.loc[df['index'] == index, 'destination_x_vert'] = (bottom_word_x_max + bottom_word_x_min)/2
                 
-
             if np.isnan(top_index) == False:
                 top_word_bottom = df.loc[df['index'] == top_index, 'ymax'].values[0]
                 source_word_top = df.loc[df['index'] == index, 'ymin'].values[0]
@@ -441,8 +395,6 @@ class Grapher:
         #replace all tne NaN values with '0' meaning there is nothing in that direction
         df[['rd_r','rd_b','rd_l','rd_t']] = df[['rd_r','rd_b','rd_l','rd_t']].fillna(0)
 
-
-
         if export_document_graph:
             for idx, row in df.iterrows():
         #bounding box
@@ -452,7 +404,6 @@ class Grapher:
                     source_x = (row['xmax'] + row['xmin'])/2
                     source_y = (row['ymax'] + row['ymin'])/2
                     
-
                     cv2.line(img, 
                             (int(source_x), int(source_y)),
                             (int(row['destination_x_vert']), int(row['destination_y_vert'])), 
@@ -478,9 +429,6 @@ class Grapher:
                     text_coordinates = (int((row['destination_x_hori'] + source_x)/2) , int((row['destination_y_hori'] +source_y)/2))     
                     cv2.putText(img, text, text_coordinates, cv2.FONT_HERSHEY_DUPLEX, 0.4, (255,0,0), 1)
 
-                
-
-
             # cv2.imshow("image", img)
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
@@ -490,8 +438,7 @@ class Grapher:
 
                 plot_path ='../../figures/graphs/' + self.filename + 'docu_graph' '.jpg'
                 cv2.imwrite(plot_path, img)
-        
-
+    
         #drop the unnecessary columns
         df.drop(['destination_x_hori', 'destination_y_hori','destination_y_vert','destination_x_vert'], axis=1, inplace=True)
 
