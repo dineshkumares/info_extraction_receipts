@@ -99,15 +99,12 @@ class Grapher:
         assert 'Object' in df.columns, '"Object" column not in object map'
 
 
-
+        #remove empty spaces both in front and behind
         for col in df.columns:
             try:
                 df[col] = df[col].str.strip()
             except AttributeError:
                 pass
-
-        #remove empty spaces both in front and behind
-        df.columns = df.columns.str.strip()
 
         #further cleaning
         df.dropna(inplace=True)
