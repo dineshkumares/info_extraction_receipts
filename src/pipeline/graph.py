@@ -111,7 +111,6 @@ class Grapher:
         for idx, row in df.iterrows():
             #flatten the nested list 
             flat_master = list(itertools.chain(*master))
-         
             #check to see if idx is in flat_master
             if idx not in flat_master:
                 top_a = row['ymin']
@@ -148,7 +147,6 @@ class Grapher:
                 .reset_index(drop=True)
     
         df = final2 
-
         """
         Pseudocode:
         1) Read words from each line starting from topmost line going towards bottommost line
@@ -185,9 +183,7 @@ class Grapher:
         for _,group in grouped:
             a = group['index'].tolist()
             b = group['index'].tolist()
-
             horizontal_connection = {a[i]:a[i+1] for i in range(len(a)-1) }
-
             #storing directional connections
             right_dict_temp = {a[i]:{'right':a[i+1]} for i in range(len(a)-1) }
             left_dict_temp = {b[i+1]:{'left':b[i]} for i in range(len(b)-1) }
@@ -219,16 +215,13 @@ class Grapher:
                             right_b = row_2['xmax']
                             left_b = row_2['xmin'] 
                             if (left_b <= right_a) and (right_b >= left_a): 
-                                bottom_connections[idx] = idx_2
-                                
+                                bottom_connections[idx] = idx_2                
                                 top_connections[idx_2] = idx
 
                                 #add it to the dataframe
                                 df.loc[df['index'] == idx , 'bottom'] = idx_2
                                 df.loc[df['index'] == idx_2, 'top'] = idx 
-
                                 #print(bottom_connections)
-
                                 #once the condition is met, break the loop to reduce redundant time complexity
                                 break 
                         
@@ -259,7 +252,6 @@ class Grapher:
 
         # connect with the interim file that has labels in it
         df['labels'] = self.df_withlabels['9']
-
         self.df = df 
         return G,result, df 
 
@@ -294,19 +286,15 @@ class Grapher:
                 # for upper letters 
                 if char.isupper(): 
                     upper += 1
-                
                 # for white spaces
                 if char.isspace():
-                    spaces += 1
-                
+                    spaces += 1               
                 # for alphabetic chars
                 if char.isalpha():
-                    alpha += 1
-                
+                    alpha += 1  
                 # for numeric chars
                 if char.isnumeric():
-                    numeric += 1
-                            
+                    numeric += 1                            
                 if char in special_chars:
                     special += 1 
 
@@ -320,7 +308,6 @@ class Grapher:
 
         df['n_upper'],df['n_alpha'],df['n_spaces'],\
         df['n_numeric'],df['n_special'] = n_upper, n_alpha, n_spaces, n_numeric,n_special
-
 
     def relative_distance(self, export_document_graph = False):
         """ 
@@ -351,7 +338,6 @@ class Grapher:
             if np.isnan(right_index) == False: 
                 right_word_left = df.loc[df['index'] == right_index, 'xmin'].values[0]
                 source_word_right = df.loc[df['index'] == index, 'xmax'].values[0]
-
                 df.loc[df['index'] == index, 'rd_r'] = (right_word_left - source_word_right)/image_width
 
                 """
@@ -369,13 +355,11 @@ class Grapher:
             if np.isnan(left_index) == False:
                 left_word_right = df.loc[df['index'] == left_index, 'xmax'].values[0]
                 source_word_left = df.loc[df['index'] == index, 'xmin'].values[0]
-
                 df.loc[df['index'] == index, 'rd_l'] = (left_word_right - source_word_left)/image_width
             
             if np.isnan(bottom_index) == False:
                 bottom_word_top = df.loc[df['index'] == bottom_index, 'ymin'].values[0]
                 source_word_bottom = df.loc[df['index'] == index, 'ymax'].values[0]
-
                 df.loc[df['index'] == index, 'rd_b'] = (bottom_word_top - source_word_bottom)/image_height
 
                 """for plotting purposes"""
@@ -388,9 +372,7 @@ class Grapher:
             if np.isnan(top_index) == False:
                 top_word_bottom = df.loc[df['index'] == top_index, 'ymax'].values[0]
                 source_word_top = df.loc[df['index'] == index, 'ymin'].values[0]
-
                 df.loc[df['index'] == index, 'rd_t'] = (top_word_bottom - source_word_top)/image_height
-
 
         #replace all tne NaN values with '0' meaning there is nothing in that direction
         df[['rd_r','rd_b','rd_l','rd_t']] = df[['rd_r','rd_b','rd_l','rd_t']].fillna(0)
@@ -432,18 +414,15 @@ class Grapher:
             # cv2.imshow("image", img)
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
-
                 if not os.path.exists('../../figures/graphs'):
                     os.makedirs('../../figures/graphs')			
-
+                    
                 plot_path ='../../figures/graphs/' + self.filename + 'docu_graph' '.jpg'
                 cv2.imwrite(plot_path, img)
-    
+   
         #drop the unnecessary columns
         df.drop(['destination_x_hori', 'destination_y_hori','destination_y_vert','destination_x_vert'], axis=1, inplace=True)
-
         self.get_text_features(df)
-
         return df
 
 if __name__ == "__main__":
